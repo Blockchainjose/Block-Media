@@ -21,10 +21,10 @@ function AnimatedCube() {
       smoothness={4}
     >
       <meshStandardMaterial
-        color="#DC2626"
-        metalness={0.8}
-        roughness={0.2}
-        envMapIntensity={1}
+        color="#FF3333"
+        metalness={0.7}
+        roughness={0.15}
+        envMapIntensity={1.5}
       />
     </RoundedBox>
   );
