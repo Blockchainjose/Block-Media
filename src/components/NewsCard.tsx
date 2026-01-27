@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { ExternalLink, Bookmark, Share2, Clock } from "lucide-react";
-import { BiasIndicator } from "./ui/BiasIndicator";
+import { BiasIndicator, BiasPercentageBar, type BiasPercentages } from "./ui/BiasIndicator";
 import { Button } from "./ui/button";
 
 export interface NewsArticle {
@@ -13,6 +13,7 @@ export interface NewsArticle {
   category: "crypto" | "global_markets" | "commodities";
   aiSummary: string;
   politicalBias: "left" | "center" | "right";
+  biasPercentages: BiasPercentages;
   balancedSummary: string;
 }
 
@@ -52,7 +53,6 @@ export function NewsCard({ article, onSave, onShare, featured = false }: NewsCar
           {/* Content */}
           <div className="p-6 md:p-8 flex flex-col">
             <div className="flex items-center gap-3 mb-4">
-              <BiasIndicator bias={article.politicalBias} size="sm" />
               <span className="flex items-center gap-1 text-sm text-muted-foreground">
                 <Clock className="w-4 h-4" />
                 {timeAgo}
@@ -62,6 +62,12 @@ export function NewsCard({ article, onSave, onShare, featured = false }: NewsCar
             <h2 className="text-2xl font-display font-bold mb-4 line-clamp-3 group-hover:text-primary transition-colors">
               {article.title}
             </h2>
+
+            {/* Bias Percentage Bar */}
+            <div className="mb-4 p-4 rounded-lg bg-muted/30 border border-border">
+              <p className="text-sm font-medium text-foreground mb-3">Bias Analysis</p>
+              <BiasPercentageBar percentages={article.biasPercentages} size="md" />
+            </div>
 
             <div className="mb-4 p-4 rounded-lg bg-muted/50 border border-border">
               <p className="text-sm font-medium text-primary mb-2">AI Summary</p>
@@ -109,10 +115,6 @@ export function NewsCard({ article, onSave, onShare, featured = false }: NewsCar
           {article.source}
         </div>
 
-        {/* Bias indicator */}
-        <div className="absolute bottom-3 left-3">
-          <BiasIndicator bias={article.politicalBias} size="sm" />
-        </div>
       </div>
 
       {/* Content */}
@@ -125,6 +127,11 @@ export function NewsCard({ article, onSave, onShare, featured = false }: NewsCar
         <h3 className="font-semibold mb-3 line-clamp-2 group-hover:text-primary transition-colors">
           {article.title}
         </h3>
+
+        {/* Bias Percentage Bar for non-featured cards */}
+        <div className="mb-3">
+          <BiasPercentageBar percentages={article.biasPercentages} size="sm" showLabels={false} />
+        </div>
 
         <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{article.aiSummary}</p>
 

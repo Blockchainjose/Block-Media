@@ -17,6 +17,7 @@ const mockArticles: NewsArticle[] = [
     category: "crypto",
     aiSummary: "Bitcoin reached a new all-time high above $100,000 as major financial institutions continue to increase their cryptocurrency holdings, signaling growing mainstream acceptance of digital assets.",
     politicalBias: "center",
+    biasPercentages: { left: 25, center: 50, right: 25 },
     balancedSummary: "Both sides acknowledge the significance of institutional crypto adoption, though they differ on regulatory implications.",
   },
   {
@@ -29,6 +30,7 @@ const mockArticles: NewsArticle[] = [
     category: "global_markets",
     aiSummary: "The Federal Reserve indicated potential interest rate cuts in upcoming meetings as inflation shows signs of cooling, potentially boosting equity markets.",
     politicalBias: "left",
+    biasPercentages: { left: 55, center: 30, right: 15 },
     balancedSummary: "While perspectives differ on the Fed's approach, economists agree that monetary policy will significantly impact 2025 markets.",
   },
   {
@@ -41,6 +43,7 @@ const mockArticles: NewsArticle[] = [
     category: "commodities",
     aiSummary: "Crude oil prices jumped 5% following reports of supply disruptions in key Middle Eastern production facilities, raising concerns about global energy costs.",
     politicalBias: "right",
+    biasPercentages: { left: 20, center: 25, right: 55 },
     balancedSummary: "The supply disruption highlights the ongoing debate between energy independence and international cooperation.",
   },
   {
@@ -53,6 +56,7 @@ const mockArticles: NewsArticle[] = [
     category: "crypto",
     aiSummary: "The upcoming Ethereum upgrade aims to dramatically reduce transaction costs and increase network throughput, potentially revolutionizing DeFi applications.",
     politicalBias: "center",
+    biasPercentages: { left: 30, center: 45, right: 25 },
     balancedSummary: "Analysts across the spectrum recognize Ethereum's technological advancement while debating its long-term regulatory framework.",
   },
   {
@@ -65,6 +69,7 @@ const mockArticles: NewsArticle[] = [
     category: "commodities",
     aiSummary: "Gold prices hit an all-time high as geopolitical uncertainties drive investors toward traditional safe-haven assets amid global market volatility.",
     politicalBias: "right",
+    biasPercentages: { left: 15, center: 30, right: 55 },
     balancedSummary: "Both conservative and progressive analysts agree that gold's rally reflects broader economic uncertainty.",
   },
   {
@@ -77,6 +82,7 @@ const mockArticles: NewsArticle[] = [
     category: "global_markets",
     aiSummary: "Asian stock markets surged following better-than-expected Chinese manufacturing and services data, signaling a potential economic recovery.",
     politicalBias: "left",
+    biasPercentages: { left: 50, center: 35, right: 15 },
     balancedSummary: "China's economic rebound has implications for global trade that both parties are watching closely.",
   },
 ];
