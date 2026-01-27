@@ -21,10 +21,12 @@ function AnimatedCube() {
       smoothness={4}
     >
       <meshStandardMaterial
-        color="#FF3333"
-        metalness={0.7}
-        roughness={0.15}
-        envMapIntensity={1.5}
+        color="#EF4444"
+        emissive="#EF4444"
+        emissiveIntensity={0.3}
+        metalness={0.6}
+        roughness={0.2}
+        envMapIntensity={1.2}
       />
     </RoundedBox>
   );
@@ -43,19 +45,24 @@ export function Logo3DCube({ size = "md", className = "" }: Logo3DCubeProps) {
   };
 
   return (
-    <div className={`${sizes[size]} ${className}`}>
+    <div 
+      className={`${sizes[size]} ${className} relative`}
+      style={{
+        filter: "drop-shadow(0 0 8px rgba(239, 68, 68, 0.5)) drop-shadow(0 0 16px rgba(239, 68, 68, 0.3))",
+      }}
+    >
       <Canvas
         camera={{ position: [0, 0, 4], fov: 45 }}
         style={{ background: "transparent" }}
       >
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} intensity={1} color="#ffffff" />
-        <pointLight position={[-10, -10, -10]} intensity={0.5} color="#DC2626" />
+        <ambientLight intensity={0.6} />
+        <pointLight position={[10, 10, 10]} intensity={1.2} color="#ffffff" />
+        <pointLight position={[-10, -10, -10]} intensity={0.6} color="#EF4444" />
         <spotLight
           position={[5, 5, 5]}
           angle={0.3}
           penumbra={1}
-          intensity={1}
+          intensity={1.2}
           color="#ffffff"
         />
         <AnimatedCube />
