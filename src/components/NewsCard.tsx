@@ -1,31 +1,46 @@
 import { motion } from "framer-motion";
-import { ExternalLink, Bookmark, Share2, Clock } from "lucide-react";
-import { BiasIndicator, BiasPercentageBar, type BiasPercentages } from "./ui/BiasIndicator";
+import { ExternalLink, Bookmark, BookmarkCheck, Share2, Clock, Sparkles, Loader2 } from "lucide-react";
+import { BiasPercentageBar, type BiasPercentages } from "./ui/BiasIndicator";
+import { MultiPerspectiveSummary } from "./MultiPerspectiveSummary";
 import { Button } from "./ui/button";
-
-export interface NewsArticle {
-  id: string;
-  title: string;
-  source: string;
-  imageUrl: string;
-  url: string;
-  publishedAt: string;
-  category: "crypto" | "global_markets" | "commodities";
-  aiSummary: string;
-  politicalBias: "left" | "center" | "right";
-  biasPercentages: BiasPercentages;
-  balancedSummary: string;
-}
+import { useState } from "react";
+import { useArticleAnalysis } from "@/hooks/useArticleAnalysis";
+import type { NewsArticle } from "@/types/article";
 
 interface NewsCardProps {
   article: NewsArticle;
   onSave?: () => void;
   onShare?: () => void;
+  isSaved?: boolean;
   featured?: boolean;
 }
 
-export function NewsCard({ article, onSave, onShare, featured = false }: NewsCardProps) {
+export function NewsCard({ article, onSave, onShare, isSaved = false, featured = false }: NewsCardProps) {
   const timeAgo = getTimeAgo(article.publishedAt);
+  const { analyzeArticle, analyzing } = useArticleAnalysis();
+  const [localArticle, setLocalArticle] = useState(article);
+  const isAnalyzing = analyzing[article.id];
+
+  const handleAnalyze = async () => {
+    const analysis = await analyzeArticle(
+      article.id,
+      article.title,
+      article.aiSummary,
+      article.source
+    );
+    if (analysis) {
+      setLocalArticle({
+        ...localArticle,
+        biasPercentages: analysis.biasPercentages,
+        aiSummary: analysis.aiSummary,
+        leftPerspective: analysis.leftPerspective,
+        rightPerspective: analysis.rightPerspective,
+        centerPerspective: analysis.centerPerspective,
+      });
+    }
+  };
+
+  const hasAnalysis = localArticle.leftPerspective || localArticle.rightPerspective || localArticle.centerPerspective;
 
   if (featured) {
     return (
@@ -38,15 +53,15 @@ export function NewsCard({ article, onSave, onShare, featured = false }: NewsCar
           {/* Image */}
           <div className="relative h-64 md:h-full overflow-hidden">
             <img
-              src={article.imageUrl}
-              alt={article.title}
+              src={localArticle.imageUrl}
+              alt={localArticle.title}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent md:bg-gradient-to-r" />
             
             {/* Source badge */}
             <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-background/80 backdrop-blur-sm text-sm font-medium">
-              {article.source}
+              {localArticle.source}
             </div>
           </div>
 
@@ -60,29 +75,60 @@ export function NewsCard({ article, onSave, onShare, featured = false }: NewsCar
             </div>
 
             <h2 className="text-2xl font-display font-bold mb-4 line-clamp-3 group-hover:text-primary transition-colors">
-              {article.title}
+              {localArticle.title}
             </h2>
 
             {/* Bias Percentage Bar */}
             <div className="mb-4 p-4 rounded-lg bg-muted/30 border border-border">
-              <p className="text-sm font-medium text-foreground mb-3">Bias Analysis</p>
-              <BiasPercentageBar percentages={article.biasPercentages} size="md" />
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-medium text-foreground">Bias Analysis</p>
+                {!hasAnalysis && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleAnalyze}
+                    disabled={isAnalyzing}
+                    className="h-7 text-xs"
+                  >
+                    {isAnalyzing ? (
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-3 w-3 mr-1" />
+                    )}
+                    AI Analyze
+                  </Button>
+                )}
+              </div>
+              <BiasPercentageBar percentages={localArticle.biasPercentages} size="md" />
             </div>
 
-            <div className="mb-4 p-4 rounded-lg bg-muted/50 border border-border">
-              <p className="text-sm font-medium text-primary mb-2">AI Summary</p>
-              <p className="text-sm text-muted-foreground line-clamp-3">{article.aiSummary}</p>
-            </div>
+            {/* Multi-perspective summaries */}
+            {hasAnalysis ? (
+              <div className="mb-4">
+                <MultiPerspectiveSummary
+                  perspectives={{
+                    leftPerspective: localArticle.leftPerspective,
+                    rightPerspective: localArticle.rightPerspective,
+                    centerPerspective: localArticle.centerPerspective,
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="mb-4 p-4 rounded-lg bg-muted/50 border border-border">
+                <p className="text-sm font-medium text-primary mb-2">AI Summary</p>
+                <p className="text-sm text-muted-foreground line-clamp-3">{localArticle.aiSummary}</p>
+              </div>
+            )}
 
             <div className="mt-auto flex items-center gap-2">
               <Button variant="default" className="btn-glow flex-1" asChild>
-                <a href={article.url} target="_blank" rel="noopener noreferrer">
+                <a href={localArticle.url} target="_blank" rel="noopener noreferrer">
                   Read Full Article
                   <ExternalLink className="w-4 h-4 ml-2" />
                 </a>
               </Button>
-              <Button variant="outline" size="icon" onClick={onSave}>
-                <Bookmark className="w-4 h-4" />
+              <Button variant={isSaved ? "secondary" : "outline"} size="icon" onClick={onSave}>
+                {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
               </Button>
               <Button variant="outline" size="icon" onClick={onShare}>
                 <Share2 className="w-4 h-4" />
@@ -104,17 +150,34 @@ export function NewsCard({ article, onSave, onShare, featured = false }: NewsCar
       {/* Image */}
       <div className="relative h-48 overflow-hidden">
         <img
-          src={article.imageUrl}
-          alt={article.title}
+          src={localArticle.imageUrl}
+          alt={localArticle.title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
         
         {/* Source badge */}
         <div className="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-background/80 backdrop-blur-sm text-xs font-medium">
-          {article.source}
+          {localArticle.source}
         </div>
 
+        {/* AI Analyze button */}
+        {!hasAnalysis && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleAnalyze}
+            disabled={isAnalyzing}
+            className="absolute top-3 right-3 h-7 text-xs bg-background/80 backdrop-blur-sm"
+          >
+            {isAnalyzing ? (
+              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+            ) : (
+              <Sparkles className="h-3 w-3 mr-1" />
+            )}
+            Analyze
+          </Button>
+        )}
       </div>
 
       {/* Content */}
@@ -125,19 +188,33 @@ export function NewsCard({ article, onSave, onShare, featured = false }: NewsCar
         </div>
 
         <h3 className="font-semibold mb-3 line-clamp-2 group-hover:text-primary transition-colors">
-          {article.title}
+          {localArticle.title}
         </h3>
 
         {/* Bias Percentage Bar for non-featured cards */}
         <div className="mb-3">
-          <BiasPercentageBar percentages={article.biasPercentages} size="sm" showLabels={false} />
+          <BiasPercentageBar percentages={localArticle.biasPercentages} size="sm" showLabels={false} />
         </div>
 
-        <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{article.aiSummary}</p>
+        {/* Show multi-perspective if analyzed, otherwise show basic summary */}
+        {hasAnalysis ? (
+          <div className="mb-4">
+            <MultiPerspectiveSummary
+              perspectives={{
+                leftPerspective: localArticle.leftPerspective,
+                rightPerspective: localArticle.rightPerspective,
+                centerPerspective: localArticle.centerPerspective,
+              }}
+              compact
+            />
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{localArticle.aiSummary}</p>
+        )}
 
         <div className="flex items-center justify-between">
           <a
-            href={article.url}
+            href={localArticle.url}
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm font-medium text-primary hover:underline flex items-center gap-1"
@@ -146,8 +223,8 @@ export function NewsCard({ article, onSave, onShare, featured = false }: NewsCar
             <ExternalLink className="w-3 h-3" />
           </a>
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onSave}>
-              <Bookmark className="w-4 h-4" />
+            <Button variant={isSaved ? "secondary" : "ghost"} size="icon" className="h-8 w-8" onClick={onSave}>
+              {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
             </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onShare}>
               <Share2 className="w-4 h-4" />
@@ -169,3 +246,6 @@ function getTimeAgo(dateString: string): string {
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
   return `${Math.floor(seconds / 86400)}d ago`;
 }
+
+// Re-export NewsArticle type for backwards compatibility
+export type { NewsArticle };
