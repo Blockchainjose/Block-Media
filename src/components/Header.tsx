@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Menu, X, User, LogOut, Settings, Bookmark } from "lucide-react";
+import { Menu, X, User, LogOut, Settings, Bookmark, LayoutDashboard } from "lucide-react";
 import { Logo } from "./ui/Logo";
 import { Button } from "./ui/button";
 import { AuthModal } from "./AuthModal";
@@ -22,6 +23,7 @@ export function Header() {
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Set up auth state listener
@@ -102,15 +104,15 @@ export function Header() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem>
-                      <User className="w-4 h-4 mr-2" />
-                      Profile
+                    <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                      <LayoutDashboard className="w-4 h-4 mr-2" />
+                      Dashboard
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/dashboard")}>
                       <Bookmark className="w-4 h-4 mr-2" />
                       Saved Articles
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/dashboard")}>
                       <Settings className="w-4 h-4 mr-2" />
                       Settings
                     </DropdownMenuItem>
@@ -167,9 +169,15 @@ export function Header() {
             ))}
             <div className="pt-4 space-y-2">
               {user ? (
-                <Button variant="outline" className="w-full" onClick={handleSignOut}>
-                  Sign Out
-                </Button>
+                <>
+                  <Button variant="outline" className="w-full" onClick={() => { navigate("/dashboard"); setIsMobileMenuOpen(false); }}>
+                    <LayoutDashboard className="w-4 h-4 mr-2" />
+                    Dashboard
+                  </Button>
+                  <Button variant="outline" className="w-full" onClick={handleSignOut}>
+                    Sign Out
+                  </Button>
+                </>
               ) : (
                 <>
                   <Button variant="outline" className="w-full" onClick={() => openAuth("signin")}>

@@ -6,7 +6,10 @@ import { NewsCardSkeleton } from "./NewsCardSkeleton";
 import { Button } from "./ui/button";
 import { InterestSelector, type Interest } from "./InterestSelector";
 import { useNews } from "@/hooks/useNews";
+import { useSavedArticles } from "@/hooks/useSavedArticles";
 import { Alert, AlertDescription } from "./ui/alert";
+import { useToast } from "@/hooks/use-toast";
+import type { NewsArticle } from "@/types/article";
 
 interface NewsFeedProps {
   selectedInterests: Interest[];
@@ -17,6 +20,8 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [biasFilter, setBiasFilter] = useState<"all" | "left" | "center" | "right">("all");
   const { data: articles = [], isLoading, error, refetch, isRefetching } = useNews();
+  const { saveArticle, isArticleSaved } = useSavedArticles();
+  const { toast } = useToast();
 
   const filteredArticles = articles.filter((article) => {
     const matchesInterest =
@@ -31,6 +36,37 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
         ? selectedInterests.filter((i) => i !== interest)
         : [...selectedInterests, interest]
     );
+  };
+
+  const handleSave = (article: NewsArticle) => {
+    if (isArticleSaved(article.url)) {
+      toast({
+        title: "Already saved",
+        description: "This article is already in your saved list",
+      });
+      return;
+    }
+    saveArticle.mutate(article);
+  };
+
+  const handleShare = async (article: NewsArticle) => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: article.title,
+          text: article.aiSummary,
+          url: article.url,
+        });
+      } else {
+        await navigator.clipboard.writeText(article.url);
+        toast({
+          title: "Link copied",
+          description: "Article link copied to clipboard",
+        });
+      }
+    } catch (error) {
+      console.error("Share failed:", error);
+    }
   };
 
   return (
@@ -148,7 +184,13 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
             viewport={{ once: true }}
             className="mb-8"
           >
-            <NewsCard article={filteredArticles[0]} featured />
+            <NewsCard 
+              article={filteredArticles[0]} 
+              featured 
+              isSaved={isArticleSaved(filteredArticles[0].url)}
+              onSave={() => handleSave(filteredArticles[0])}
+              onShare={() => handleShare(filteredArticles[0])}
+            />
           </motion.div>
         )}
 
@@ -169,7 +211,12 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
               >
-                <NewsCard article={article} />
+                <NewsCard 
+                  article={article} 
+                  isSaved={isArticleSaved(article.url)}
+                  onSave={() => handleSave(article)}
+                  onShare={() => handleShare(article)}
+                />
               </motion.div>
             ))}
           </div>
