@@ -1,20 +1,14 @@
 import { motion } from "framer-motion";
 import { Logo } from "./ui/Logo";
-import { Twitter, Linkedin, Github, Mail } from "lucide-react";
+import { Github, Mail } from "lucide-react";
 
 export function Footer() {
   const links = {
     product: [
-      { label: "Features", href: "#" },
-      { label: "Pricing", href: "#" },
-      { label: "API", href: "#" },
-      { label: "Integrations", href: "#" },
+      { label: "Features", href: "/features" },
     ],
     company: [
-      { label: "About", href: "#" },
-      { label: "Blog", href: "#" },
-      { label: "Careers", href: "#" },
-      { label: "Press", href: "#" },
+      { label: "About", href: "/about" },
     ],
     legal: [
       { label: "Privacy", href: "/privacy" },
@@ -24,10 +18,8 @@ export function Footer() {
   };
 
   const socials = [
-    { icon: Twitter, href: "#", label: "Twitter" },
-    { icon: Linkedin, href: "#", label: "LinkedIn" },
     { icon: Github, href: "#", label: "GitHub" },
-    { icon: Mail, href: "#", label: "Email" },
+    { icon: Mail, href: "mailto:contact@blockmediacorp.com", label: "Email" },
   ];
 
   return (
