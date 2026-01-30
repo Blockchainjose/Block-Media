@@ -13,7 +13,7 @@ export function Footer() {
     legal: [
       { label: "Privacy", href: "/privacy" },
       { label: "Terms", href: "/terms" },
-      { label: "Cookie Policy", href: "/privacy#cookie-usage" },
+      { label: "Cookie Policy", href: "/cookie-policy" },
     ],
   };
 
