@@ -18,7 +18,7 @@ export function Footer() {
   };
 
   const socials = [
-    { icon: Github, href: "#", label: "GitHub" },
+    { icon: Github, href: "https://github.com/Blockchainjose/Block-Media", label: "GitHub" },
     { icon: Mail, href: "mailto:contact@blockmediacorp.com", label: "Email" },
   ];
 
