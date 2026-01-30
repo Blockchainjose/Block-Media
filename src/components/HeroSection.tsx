@@ -8,7 +8,7 @@ interface HeroSectionProps {
 
 export function HeroSection({ onGetStarted }: HeroSectionProps) {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-28 md:pt-32">
       {/* Background effects */}
       <div className="absolute inset-0 glow-bg" />
       <div className="absolute inset-0">
