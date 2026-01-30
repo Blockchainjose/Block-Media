@@ -15,8 +15,12 @@ interface Candle {
   volume: number;
 }
 
-// Symbol mappings for different asset types
+// Symbol mappings for different asset types (using ETF proxies for indices/commodities)
 const SYMBOL_MAP: Record<string, { finnhubSymbol: string; type: "stock" | "crypto" | "forex" }> = {
+  // Index ETFs
+  "S&P 500": { finnhubSymbol: "SPY", type: "stock" },
+  "NASDAQ": { finnhubSymbol: "QQQ", type: "stock" },
+  "DOW": { finnhubSymbol: "DIA", type: "stock" },
   // Stocks (MAG7 + additional)
   "AAPL": { finnhubSymbol: "AAPL", type: "stock" },
   "MSFT": { finnhubSymbol: "MSFT", type: "stock" },
@@ -33,12 +37,12 @@ const SYMBOL_MAP: Record<string, { finnhubSymbol: string; type: "stock" | "crypt
   "SOL": { finnhubSymbol: "BINANCE:SOLUSDT", type: "crypto" },
   "XRP": { finnhubSymbol: "BINANCE:XRPUSDT", type: "crypto" },
   "BNB": { finnhubSymbol: "BINANCE:BNBUSDT", type: "crypto" },
-  // Commodities
-  "Gold": { finnhubSymbol: "OANDA:XAU_USD", type: "forex" },
-  "Silver": { finnhubSymbol: "OANDA:XAG_USD", type: "forex" },
-  "Platinum": { finnhubSymbol: "OANDA:XPT_USD", type: "forex" },
-  "Copper": { finnhubSymbol: "OANDA:XCU_USD", type: "forex" },
-  "Crude": { finnhubSymbol: "OANDA:WTICO_USD", type: "forex" },
+  // Commodity ETFs
+  "Gold": { finnhubSymbol: "GLD", type: "stock" },
+  "Silver": { finnhubSymbol: "SLV", type: "stock" },
+  "Platinum": { finnhubSymbol: "PPLT", type: "stock" },
+  "Copper": { finnhubSymbol: "CPER", type: "stock" },
+  "Crude": { finnhubSymbol: "USO", type: "stock" },
 };
 
 async function fetchStockCandles(symbol: string, apiKey: string, resolution: string, from: number, to: number): Promise<Candle[]> {

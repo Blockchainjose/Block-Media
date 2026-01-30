@@ -14,17 +14,17 @@ interface Quote {
   changePercent: number;
 }
 
-// Major Indices + MAG7 + Crypto + Commodities symbols
-const INDEX_SYMBOLS = ["^GSPC", "^IXIC", "^DJI"]; // SPX, NASDAQ, DOW
+// ETF proxies for indices and commodities (work on Finnhub free tier)
+const INDEX_SYMBOLS = ["SPY", "QQQ", "DIA"]; // S&P 500, NASDAQ, DOW ETFs
 const STOCK_SYMBOLS = ["PLTR", "CRWV", "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA"];
 const CRYPTO_SYMBOLS = ["BINANCE:BTCUSDT", "BINANCE:ETHUSDT", "BINANCE:SOLUSDT", "BINANCE:XRPUSDT", "BINANCE:BNBUSDT"];
-const COMMODITY_SYMBOLS = ["OANDA:XAU_USD", "OANDA:XAG_USD", "OANDA:XPT_USD", "OANDA:WTICO_USD", "OANDA:XCUUSD"];
+const COMMODITY_SYMBOLS = ["GLD", "SLV", "PPLT", "USO", "CPER"]; // Gold, Silver, Platinum, Oil, Copper ETFs
 
 const DISPLAY_NAMES: Record<string, string> = {
-  // Indices
-  "^GSPC": "S&P 500",
-  "^IXIC": "NASDAQ",
-  "^DJI": "DOW",
+  // Index ETFs
+  "SPY": "S&P 500",
+  "QQQ": "NASDAQ",
+  "DIA": "DOW",
   // Tech stocks
   "PLTR": "PLTR",
   "CRWV": "CRWV",
@@ -41,12 +41,12 @@ const DISPLAY_NAMES: Record<string, string> = {
   "BINANCE:SOLUSDT": "SOL",
   "BINANCE:XRPUSDT": "XRP",
   "BINANCE:BNBUSDT": "BNB",
-  // Commodities
-  "OANDA:XAU_USD": "Gold",
-  "OANDA:XAG_USD": "Silver",
-  "OANDA:XPT_USD": "Platinum",
-  "OANDA:WTICO_USD": "Crude",
-  "OANDA:XCUUSD": "Copper",
+  // Commodity ETFs
+  "GLD": "Gold",
+  "SLV": "Silver",
+  "PPLT": "Platinum",
+  "USO": "Crude",
+  "CPER": "Copper",
 };
 
 async function fetchQuote(symbol: string, apiKey: string): Promise<Quote | null> {
