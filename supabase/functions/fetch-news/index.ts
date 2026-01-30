@@ -108,14 +108,18 @@ function detectCategory(
   return "global_markets";
 }
 
-// Priority news sources: Fox News, Fox Business, MSNBC, CNN, Bloomberg, WSJ
-const PRIORITY_SOURCES = [
+// US-only news sources - explicitly listed to exclude international sources
+const US_NEWS_SOURCES = [
   "foxnews.com",
   "foxbusiness.com", 
   "msnbc.com",
   "cnn.com",
+  "cnbc.com",
   "bloomberg.com",
   "wsj.com",
+  "marketwatch.com",
+  "reuters.com",
+  "yahoo.com",
 ];
 
 async function fetchMarketauxNews(apiKey: string, sources?: string[]): Promise<NewsArticle[]> {
@@ -224,18 +228,16 @@ serve(async (req) => {
     }
 
     // Fetch from all sources in parallel:
-    // 1. General Marketaux news
-    // 2. Priority sources (Fox, CNN, MSNBC, Bloomberg, WSJ)
-    // 3. Finnhub general news
-    const [marketauxArticles, prioritySourceArticles, finnhubArticles] = await Promise.all([
-      fetchMarketauxNews(marketauxKey),
-      fetchMarketauxNews(marketauxKey, PRIORITY_SOURCES),
+    // 1. US-only sources from Marketaux
+    // 2. Finnhub general news (will be filtered by source later)
+    const [marketauxArticles, finnhubArticles] = await Promise.all([
+      fetchMarketauxNews(marketauxKey, US_NEWS_SOURCES),
       fetchFinnhubNews(finnhubKey),
     ]);
 
     // Combine all articles and deduplicate by title
     const seenTitles = new Set<string>();
-    const allArticles = [...prioritySourceArticles, ...marketauxArticles, ...finnhubArticles]
+    const allArticles = [...marketauxArticles, ...finnhubArticles]
       .filter(article => {
         const normalizedTitle = article.title.toLowerCase().trim();
         if (seenTitles.has(normalizedTitle)) {

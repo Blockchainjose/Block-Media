@@ -7,6 +7,7 @@ import { NewsletterForm } from "@/components/NewsletterForm";
 import { Footer } from "@/components/Footer";
 import { AuthModal } from "@/components/AuthModal";
 import { SEOHead } from "@/components/SEOHead";
+import { CookieBanner } from "@/components/CookieBanner";
 import type { Interest } from "@/components/InterestSelector";
 
 const Index = () => {
@@ -49,6 +50,8 @@ const Index = () => {
         onClose={() => setShowAuthModal(false)} 
         defaultMode="signup"
       />
+      
+      <CookieBanner />
     </div>
   );
 };
