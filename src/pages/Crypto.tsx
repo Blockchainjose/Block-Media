@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { PriceTicker } from "@/components/PriceTicker";
 import { AssetCard } from "@/components/charts/AssetCard";
 import { CryptoNewsCard } from "@/components/crypto/CryptoNewsCard";
+import { SEOHead } from "@/components/SEOHead";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,7 @@ import { useQuotes } from "@/hooks/useQuotes";
 import { useCryptoNews, type CryptoNewsArticle } from "@/hooks/useCryptoNews";
 import { Bitcoin, Newspaper, BarChart3, Scale, Layers, Box } from "lucide-react";
 
-const CRYPTO_SYMBOLS = ["BTC", "ETH", "SOL"];
+const CRYPTO_SYMBOLS = ["BTC", "ETH", "SOL", "XRP", "BNB"];
 
 const newsCategories = [
   { value: "all", label: "All News", icon: Newspaper },
@@ -42,19 +43,26 @@ export default function Crypto() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Crypto Hub - Bitcoin, Ethereum, XRP Prices & News"
+        description="Real-time cryptocurrency prices for Bitcoin, Ethereum, Solana, XRP, BNB with live charts. Get the latest crypto news on regulations, protocol updates, and blockchain developments."
+        keywords="Bitcoin price, Ethereum price, XRP, BNB, Solana, cryptocurrency news, crypto regulations, blockchain news, DeFi, protocol updates"
+        canonicalPath="/crypto"
+      />
+      
       <Header />
       <PriceTicker />
 
       <main className="pt-32 pb-20">
         <div className="container mx-auto px-4">
           {/* Hero Section */}
-          <motion.div
+          <motion.header
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
           >
             <div className="flex items-center justify-center gap-2 mb-4">
-              <Bitcoin className="w-8 h-8 text-primary" />
+              <Bitcoin className="w-8 h-8 text-primary" aria-hidden="true" />
               <h1 className="text-4xl md:text-5xl font-bold">
                 Crypto <span className="text-gradient">Hub</span>
               </h1>
@@ -63,14 +71,14 @@ export default function Crypto() {
               Real-time cryptocurrency prices, charts, and comprehensive news coverage including 
               regulations, protocol updates, and blockchain developments.
             </p>
-          </motion.div>
+          </motion.header>
 
           {/* Price Cards */}
           <section className="mb-16">
             <h2 className="text-2xl font-bold mb-6">Live Prices</h2>
             {quotesLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {Array.from({ length: 3 }).map((_, i) => (
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                {Array.from({ length: 5 }).map((_, i) => (
                   <Skeleton key={i} className="h-[250px]" />
                 ))}
               </div>
@@ -78,7 +86,7 @@ export default function Crypto() {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6"
               >
                 {cryptoQuotes.map((quote) => (
                   <motion.div

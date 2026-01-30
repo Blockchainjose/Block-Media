@@ -6,6 +6,7 @@ import { NewsFeed } from "@/components/NewsFeed";
 import { NewsletterForm } from "@/components/NewsletterForm";
 import { Footer } from "@/components/Footer";
 import { AuthModal } from "@/components/AuthModal";
+import { SEOHead } from "@/components/SEOHead";
 import type { Interest } from "@/components/InterestSelector";
 
 const Index = () => {
@@ -14,6 +15,13 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="AI-Powered Finance News with Bias Detection"
+        description="Get real-time stock market, cryptocurrency, and commodities news with AI-powered summaries and political bias detection. Track S&P 500, NASDAQ, Bitcoin, Ethereum, Gold prices and more."
+        keywords="stock market news, cryptocurrency news, AI news analysis, political bias detection, financial news"
+        canonicalPath="/"
+      />
+      
       <Header />
       <PriceTicker />
       
@@ -26,8 +34,9 @@ const Index = () => {
         />
 
         {/* Newsletter Section */}
-        <section id="newsletter" className="py-20 relative">
+        <section id="newsletter" aria-labelledby="newsletter-heading" className="py-20 relative">
           <div className="container mx-auto px-4 max-w-3xl">
+            <h2 id="newsletter-heading" className="sr-only">Subscribe to Newsletter</h2>
             <NewsletterForm />
           </div>
         </section>

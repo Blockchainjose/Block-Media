@@ -14,12 +14,20 @@ interface Quote {
   changePercent: number;
 }
 
-// MAG7 + Crypto + Commodities symbols
-const STOCK_SYMBOLS = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA"];
-const CRYPTO_SYMBOLS = ["BINANCE:BTCUSDT", "BINANCE:ETHUSDT", "BINANCE:SOLUSDT"];
-const COMMODITY_SYMBOLS = ["OANDA:XAU_USD", "OANDA:XAG_USD", "OANDA:WTICO_USD"];
+// Major Indices + MAG7 + Crypto + Commodities symbols
+const INDEX_SYMBOLS = ["^GSPC", "^IXIC", "^DJI"]; // SPX, NASDAQ, DOW
+const STOCK_SYMBOLS = ["PLTR", "CRWV", "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA"];
+const CRYPTO_SYMBOLS = ["BINANCE:BTCUSDT", "BINANCE:ETHUSDT", "BINANCE:SOLUSDT", "BINANCE:XRPUSDT", "BINANCE:BNBUSDT"];
+const COMMODITY_SYMBOLS = ["OANDA:XAU_USD", "OANDA:XAG_USD", "OANDA:XPT_USD", "OANDA:WTICO_USD", "OANDA:XCUUSD"];
 
 const DISPLAY_NAMES: Record<string, string> = {
+  // Indices
+  "^GSPC": "S&P 500",
+  "^IXIC": "NASDAQ",
+  "^DJI": "DOW",
+  // Tech stocks
+  "PLTR": "PLTR",
+  "CRWV": "CRWV",
   "AAPL": "AAPL",
   "MSFT": "MSFT",
   "GOOGL": "GOOGL",
@@ -27,12 +35,18 @@ const DISPLAY_NAMES: Record<string, string> = {
   "NVDA": "NVDA",
   "META": "META",
   "TSLA": "TSLA",
+  // Crypto
   "BINANCE:BTCUSDT": "BTC",
   "BINANCE:ETHUSDT": "ETH",
   "BINANCE:SOLUSDT": "SOL",
+  "BINANCE:XRPUSDT": "XRP",
+  "BINANCE:BNBUSDT": "BNB",
+  // Commodities
   "OANDA:XAU_USD": "Gold",
   "OANDA:XAG_USD": "Silver",
+  "OANDA:XPT_USD": "Platinum",
   "OANDA:WTICO_USD": "Crude",
+  "OANDA:XCUUSD": "Copper",
 };
 
 async function fetchQuote(symbol: string, apiKey: string): Promise<Quote | null> {
@@ -81,7 +95,7 @@ serve(async (req) => {
       );
     }
 
-    const allSymbols = [...STOCK_SYMBOLS, ...CRYPTO_SYMBOLS, ...COMMODITY_SYMBOLS];
+    const allSymbols = [...INDEX_SYMBOLS, ...STOCK_SYMBOLS, ...CRYPTO_SYMBOLS, ...COMMODITY_SYMBOLS];
     
     // Fetch all quotes in parallel
     const quotePromises = allSymbols.map(symbol => fetchQuote(symbol, finnhubKey));
