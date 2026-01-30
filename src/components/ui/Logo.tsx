@@ -1,13 +1,15 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { Logo3DCube } from "./Logo3DCube";
 
 interface LogoProps {
   className?: string;
   size?: "sm" | "md" | "lg";
   showCube?: boolean;
+  href?: string;
 }
 
-export function Logo({ className = "", size = "md", showCube = true }: LogoProps) {
+export function Logo({ className = "", size = "md", showCube = true, href }: LogoProps) {
   const textSizes = {
     sm: "text-xl",
     md: "text-2xl",
@@ -20,7 +22,7 @@ export function Logo({ className = "", size = "md", showCube = true }: LogoProps
     lg: "lg" as const,
   };
 
-  return (
+  const content = (
     <motion.div 
       className={`flex items-center gap-2 ${className}`}
       initial={{ opacity: 0, x: -20 }}
@@ -34,4 +36,14 @@ export function Logo({ className = "", size = "md", showCube = true }: LogoProps
       </div>
     </motion.div>
   );
+
+  if (href) {
+    return (
+      <Link to={href} className="hover:opacity-80 transition-opacity">
+        {content}
+      </Link>
+    );
+  }
+
+  return content;
 }

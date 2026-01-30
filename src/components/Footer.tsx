@@ -28,7 +28,7 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <Logo size="md" className="mb-4" />
+            <Logo size="md" className="mb-4" href="/" />
             <p className="text-sm text-muted-foreground mb-6">
               AI-powered finance news with bias awareness. Stay informed, stay balanced.
             </p>
