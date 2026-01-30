@@ -108,9 +108,25 @@ function detectCategory(
   return "global_markets";
 }
 
-async function fetchMarketauxNews(apiKey: string): Promise<NewsArticle[]> {
+// Priority news sources: Fox News, Fox Business, MSNBC, CNN, Bloomberg, WSJ
+const PRIORITY_SOURCES = [
+  "foxnews.com",
+  "foxbusiness.com", 
+  "msnbc.com",
+  "cnn.com",
+  "bloomberg.com",
+  "wsj.com",
+];
+
+async function fetchMarketauxNews(apiKey: string, sources?: string[]): Promise<NewsArticle[]> {
   try {
-    const url = `https://api.marketaux.com/v1/news/all?api_token=${apiKey}&language=en&filter_entities=true&limit=10`;
+    let url = `https://api.marketaux.com/v1/news/all?api_token=${apiKey}&language=en&filter_entities=true&limit=15`;
+    
+    // Add source filter if specified
+    if (sources && sources.length > 0) {
+      url += `&domains=${sources.join(",")}`;
+    }
+    
     const response = await fetch(url);
     
     if (!response.ok) {
@@ -207,16 +223,28 @@ serve(async (req) => {
       );
     }
 
-    // Fetch from both APIs in parallel
-    const [marketauxArticles, finnhubArticles] = await Promise.all([
+    // Fetch from all sources in parallel:
+    // 1. General Marketaux news
+    // 2. Priority sources (Fox, CNN, MSNBC, Bloomberg, WSJ)
+    // 3. Finnhub general news
+    const [marketauxArticles, prioritySourceArticles, finnhubArticles] = await Promise.all([
       fetchMarketauxNews(marketauxKey),
+      fetchMarketauxNews(marketauxKey, PRIORITY_SOURCES),
       fetchFinnhubNews(finnhubKey),
     ]);
 
-    // Combine and sort by date
-    const allArticles = [...marketauxArticles, ...finnhubArticles].sort(
-      (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-    );
+    // Combine all articles and deduplicate by title
+    const seenTitles = new Set<string>();
+    const allArticles = [...prioritySourceArticles, ...marketauxArticles, ...finnhubArticles]
+      .filter(article => {
+        const normalizedTitle = article.title.toLowerCase().trim();
+        if (seenTitles.has(normalizedTitle)) {
+          return false;
+        }
+        seenTitles.add(normalizedTitle);
+        return true;
+      })
+      .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 
     return new Response(JSON.stringify({ articles: allArticles }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
