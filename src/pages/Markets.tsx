@@ -4,14 +4,16 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { PriceTicker } from "@/components/PriceTicker";
 import { AssetCard } from "@/components/charts/AssetCard";
+import { SEOHead } from "@/components/SEOHead";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuotes } from "@/hooks/useQuotes";
 import { TrendingUp, BarChart3, DollarSign } from "lucide-react";
 
-const STOCK_SYMBOLS = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA"];
-const CRYPTO_SYMBOLS = ["BTC", "ETH", "SOL"];
-const COMMODITY_SYMBOLS = ["Gold", "Silver", "Crude"];
+const INDEX_SYMBOLS = ["S&P 500", "NASDAQ", "DOW"];
+const STOCK_SYMBOLS = ["PLTR", "CRWV", "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA"];
+const CRYPTO_SYMBOLS = ["BTC", "ETH", "SOL", "XRP", "BNB"];
+const COMMODITY_SYMBOLS = ["Gold", "Silver", "Platinum", "Crude", "Copper"];
 
 export default function Markets() {
   const { data: quotes, isLoading } = useQuotes();
@@ -22,12 +24,15 @@ export default function Markets() {
     return quotes.filter((q) => symbols.includes(q.displaySymbol));
   };
 
+  const indexQuotes = filterQuotes(INDEX_SYMBOLS);
   const stockQuotes = filterQuotes(STOCK_SYMBOLS);
   const cryptoQuotes = filterQuotes(CRYPTO_SYMBOLS);
   const commodityQuotes = filterQuotes(COMMODITY_SYMBOLS);
 
   const getDisplayQuotes = () => {
     switch (activeTab) {
+      case "indices":
+        return indexQuotes;
       case "stocks":
         return stockQuotes;
       case "crypto":
@@ -41,13 +46,20 @@ export default function Markets() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Market Overview - Live Stock, Crypto & Commodity Prices"
+        description="Track real-time prices and historical charts for S&P 500, NASDAQ, DOW, Bitcoin, Ethereum, XRP, Gold, Silver, Platinum, Copper and more. Live market data updated every minute."
+        keywords="stock prices, S&P 500, NASDAQ, DOW Jones, Bitcoin price, Ethereum price, XRP, Gold price, Silver price, market data, live quotes"
+        canonicalPath="/markets"
+      />
+      
       <Header />
       <PriceTicker />
 
       <main className="pt-32 pb-20">
         <div className="container mx-auto px-4">
           {/* Hero Section */}
-          <motion.div
+          <motion.header
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
@@ -56,28 +68,33 @@ export default function Markets() {
               Market <span className="text-gradient">Overview</span>
             </h1>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Track real-time prices and historical performance of MAG7 stocks, 
+              Track real-time prices and historical performance of major indices, stocks, 
               cryptocurrencies, and commodities all in one place.
             </p>
-          </motion.div>
+          </motion.header>
 
           {/* Category Tabs */}
+          <nav aria-label="Market categories">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-4">
-              <TabsTrigger value="all" className="flex items-center gap-2">
-                <BarChart3 className="w-4 h-4" />
+            <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-5">
+              <TabsTrigger value="all" className="flex items-center gap-1 text-xs sm:text-sm">
+                <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />
                 All
               </TabsTrigger>
-              <TabsTrigger value="stocks" className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4" />
+              <TabsTrigger value="indices" className="flex items-center gap-1 text-xs sm:text-sm">
+                <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
+                Indices
+              </TabsTrigger>
+              <TabsTrigger value="stocks" className="flex items-center gap-1 text-xs sm:text-sm">
+                <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
                 Stocks
               </TabsTrigger>
-              <TabsTrigger value="crypto" className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4" />
+              <TabsTrigger value="crypto" className="flex items-center gap-1 text-xs sm:text-sm">
+                <DollarSign className="w-3 h-3 sm:w-4 sm:h-4" />
                 Crypto
               </TabsTrigger>
-              <TabsTrigger value="commodities" className="flex items-center gap-2">
-                <BarChart3 className="w-4 h-4" />
+              <TabsTrigger value="commodities" className="flex items-center gap-1 text-xs sm:text-sm">
+                <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />
                 Metals
               </TabsTrigger>
             </TabsList>
@@ -109,6 +126,7 @@ export default function Markets() {
               )}
             </TabsContent>
           </Tabs>
+          </nav>
 
           {/* Market Summary Stats */}
           {!isLoading && quotes && (
@@ -119,19 +137,19 @@ export default function Markets() {
               className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6"
             >
               <div className="bg-card border rounded-lg p-6">
-                <h3 className="text-sm font-medium text-muted-foreground mb-2">MAG7 Performance</h3>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Major Indices</h3>
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl font-bold">
-                    {stockQuotes.filter((q) => q.change > 0).length}/{stockQuotes.length}
+                    {indexQuotes.filter((q) => q.change > 0).length}/{indexQuotes.length}
                   </span>
-                  <span className="text-muted-foreground">stocks up today</span>
+                  <span className="text-muted-foreground">indices up today</span>
                 </div>
               </div>
               <div className="bg-card border rounded-lg p-6">
-                <h3 className="text-sm font-medium text-muted-foreground mb-2">Crypto Market</h3>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Stocks & Crypto</h3>
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl font-bold">
-                    {cryptoQuotes.filter((q) => q.change > 0).length}/{cryptoQuotes.length}
+                    {[...stockQuotes, ...cryptoQuotes].filter((q) => q.change > 0).length}/{stockQuotes.length + cryptoQuotes.length}
                   </span>
                   <span className="text-muted-foreground">assets up today</span>
                 </div>

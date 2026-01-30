@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SavedArticlesSection } from "@/components/dashboard/SavedArticlesSection";
 import { InterestsSection } from "@/components/dashboard/InterestsSection";
 import { ProfileSection } from "@/components/dashboard/ProfileSection";
+import { SEOHead } from "@/components/SEOHead";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from "@supabase/supabase-js";
 
@@ -60,6 +61,12 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Your Dashboard - Saved Articles & Preferences"
+        description="Manage your saved articles, customize your news interests, and update your profile settings on Block Media."
+        canonicalPath="/dashboard"
+      />
+      
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
