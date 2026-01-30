@@ -48,10 +48,11 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-4xl sm:text-5xl md:text-7xl font-display font-bold leading-tight mb-6"
+            className="text-4xl sm:text-5xl md:text-7xl font-light tracking-tight leading-tight mb-6"
+            style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
           >
             Finance News,{" "}
-            <span className="text-gradient-red">AI-Powered</span>
+            <span className="text-gradient-red font-normal">AI-Powered</span>
             <br />& Bias-Aware
           </motion.h1>
 

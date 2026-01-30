@@ -20,18 +20,39 @@ interface NewsArticle {
   balancedSummary: string;
 }
 
-// Map sources to political bias (simplified heuristic)
+// Map sources to political bias (comprehensive)
 const sourceBiasMap: Record<string, "left" | "center" | "right"> = {
-  "cnbc": "center",
-  "wsj": "center",
-  "fox": "right",
-  "foxbusiness": "right",
+  // Left-leaning
   "cnn": "left",
   "msnbc": "left",
+  "nytimes": "left",
+  "washingtonpost": "left",
+  "huffpost": "left",
+  "huffingtonpost": "left",
+  "vox": "left",
+  "thedailybeast": "left",
+  "motherjones": "left",
+  "slate": "left",
+  // Center
+  "cnbc": "center",
+  "wsj": "center",
   "reuters": "center",
   "bloomberg": "center",
   "marketwatch": "center",
   "yahoo": "center",
+  "apnews": "center",
+  "npr": "center",
+  "usatoday": "center",
+  "thehill": "center",
+  // Right-leaning
+  "fox": "right",
+  "foxnews": "right",
+  "foxbusiness": "right",
+  "nypost": "right",
+  "washingtontimes": "right",
+  "dailywire": "right",
+  "breitbart": "right",
+  "newsmax": "right",
   "default": "center",
 };
 
@@ -108,19 +129,40 @@ function detectCategory(
   return "global_markets";
 }
 
-// US-only news sources - explicitly listed to exclude international sources
-const US_NEWS_SOURCES = [
-  "foxnews.com",
-  "foxbusiness.com", 
-  "msnbc.com",
+// US-only news sources - balanced across political spectrum
+// Left-leaning sources
+const LEFT_SOURCES = [
   "cnn.com",
+  "msnbc.com",
+  "nytimes.com",
+  "washingtonpost.com",
+  "huffpost.com",
+  "vox.com",
+  "slate.com",
+];
+
+// Center sources
+const CENTER_SOURCES = [
   "cnbc.com",
   "bloomberg.com",
   "wsj.com",
   "marketwatch.com",
   "reuters.com",
-  "yahoo.com",
+  "apnews.com",
+  "thehill.com",
 ];
+
+// Right-leaning sources
+const RIGHT_SOURCES = [
+  "foxnews.com",
+  "foxbusiness.com",
+  "nypost.com",
+  "washingtontimes.com",
+  "newsmax.com",
+];
+
+// Combined US sources for API queries
+const US_NEWS_SOURCES = [...LEFT_SOURCES, ...CENTER_SOURCES, ...RIGHT_SOURCES];
 
 async function fetchMarketauxNews(apiKey: string, sources?: string[]): Promise<NewsArticle[]> {
   try {
