@@ -17,7 +17,7 @@ interface Candle {
 
 // Symbol mappings for different asset types
 const SYMBOL_MAP: Record<string, { finnhubSymbol: string; type: "stock" | "crypto" | "forex" }> = {
-  // Stocks (MAG7)
+  // Stocks (MAG7 + additional)
   "AAPL": { finnhubSymbol: "AAPL", type: "stock" },
   "MSFT": { finnhubSymbol: "MSFT", type: "stock" },
   "GOOGL": { finnhubSymbol: "GOOGL", type: "stock" },
@@ -25,13 +25,19 @@ const SYMBOL_MAP: Record<string, { finnhubSymbol: string; type: "stock" | "crypt
   "NVDA": { finnhubSymbol: "NVDA", type: "stock" },
   "META": { finnhubSymbol: "META", type: "stock" },
   "TSLA": { finnhubSymbol: "TSLA", type: "stock" },
+  "PLTR": { finnhubSymbol: "PLTR", type: "stock" },
+  "CRWV": { finnhubSymbol: "CRWV", type: "stock" },
   // Crypto
   "BTC": { finnhubSymbol: "BINANCE:BTCUSDT", type: "crypto" },
   "ETH": { finnhubSymbol: "BINANCE:ETHUSDT", type: "crypto" },
   "SOL": { finnhubSymbol: "BINANCE:SOLUSDT", type: "crypto" },
+  "XRP": { finnhubSymbol: "BINANCE:XRPUSDT", type: "crypto" },
+  "BNB": { finnhubSymbol: "BINANCE:BNBUSDT", type: "crypto" },
   // Commodities
   "Gold": { finnhubSymbol: "OANDA:XAU_USD", type: "forex" },
   "Silver": { finnhubSymbol: "OANDA:XAG_USD", type: "forex" },
+  "Platinum": { finnhubSymbol: "OANDA:XPT_USD", type: "forex" },
+  "Copper": { finnhubSymbol: "OANDA:XCU_USD", type: "forex" },
   "Crude": { finnhubSymbol: "OANDA:WTICO_USD", type: "forex" },
 };
 
