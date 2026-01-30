@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Header } from "@/components/Header";
+import { PriceTicker } from "@/components/PriceTicker";
 import { HeroSection } from "@/components/HeroSection";
 import { NewsFeed } from "@/components/NewsFeed";
 import { NewsletterForm } from "@/components/NewsletterForm";
@@ -14,6 +15,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      <PriceTicker />
       
       <main>
         <HeroSection onGetStarted={() => setShowAuthModal(true)} />
