@@ -17,9 +17,9 @@ export function Footer() {
       { label: "Press", href: "#" },
     ],
     legal: [
-      { label: "Privacy", href: "#" },
-      { label: "Terms", href: "#" },
-      { label: "Cookie Policy", href: "#" },
+      { label: "Privacy", href: "/privacy" },
+      { label: "Terms", href: "/terms" },
+      { label: "Cookie Policy", href: "/privacy#cookie-usage" },
     ],
   };
 
