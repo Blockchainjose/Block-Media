@@ -129,40 +129,54 @@ function detectCategory(
   return "global_markets";
 }
 
-// US-only news sources - balanced across political spectrum
+// US-only news sources - strictly limited to 8 outlets balanced across political spectrum
 // Left-leaning sources
 const LEFT_SOURCES = [
   "cnn.com",
   "msnbc.com",
   "nytimes.com",
-  "washingtonpost.com",
-  "huffpost.com",
-  "vox.com",
-  "slate.com",
 ];
 
 // Center sources
 const CENTER_SOURCES = [
   "cnbc.com",
-  "bloomberg.com",
   "wsj.com",
   "marketwatch.com",
-  "reuters.com",
-  "apnews.com",
-  "thehill.com",
 ];
 
 // Right-leaning sources
 const RIGHT_SOURCES = [
   "foxnews.com",
   "foxbusiness.com",
-  "nypost.com",
-  "washingtontimes.com",
-  "newsmax.com",
 ];
 
-// Combined US sources for API queries
+// Combined US sources for API queries (8 total outlets)
 const US_NEWS_SOURCES = [...LEFT_SOURCES, ...CENTER_SOURCES, ...RIGHT_SOURCES];
+
+// Helper to check if source is from allowed list
+function isAllowedSource(source: string): boolean {
+  const lowerSource = source.toLowerCase();
+  return US_NEWS_SOURCES.some(allowed => lowerSource.includes(allowed.replace('.com', '')));
+}
+
+// Balance articles by political leaning
+function balanceArticles(articles: NewsArticle[]): NewsArticle[] {
+  const leftArticles = articles.filter(a => a.politicalBias === "left");
+  const centerArticles = articles.filter(a => a.politicalBias === "center");
+  const rightArticles = articles.filter(a => a.politicalBias === "right");
+  
+  const balanced: NewsArticle[] = [];
+  const maxPerCategory = Math.max(leftArticles.length, centerArticles.length, rightArticles.length);
+  
+  // Interleave articles from each category for balanced representation
+  for (let i = 0; i < maxPerCategory; i++) {
+    if (leftArticles[i]) balanced.push(leftArticles[i]);
+    if (centerArticles[i]) balanced.push(centerArticles[i]);
+    if (rightArticles[i]) balanced.push(rightArticles[i]);
+  }
+  
+  return balanced;
+}
 
 async function fetchMarketauxNews(apiKey: string, sources?: string[]): Promise<NewsArticle[]> {
   try {
@@ -277,10 +291,14 @@ serve(async (req) => {
       fetchFinnhubNews(finnhubKey),
     ]);
 
-    // Combine all articles and deduplicate by title
+    // Combine all articles, filter to allowed sources, and deduplicate by title
     const seenTitles = new Set<string>();
     const allArticles = [...marketauxArticles, ...finnhubArticles]
       .filter(article => {
+        // Only include articles from allowed US sources
+        if (!isAllowedSource(article.source)) {
+          return false;
+        }
         const normalizedTitle = article.title.toLowerCase().trim();
         if (seenTitles.has(normalizedTitle)) {
           return false;
@@ -290,7 +308,10 @@ serve(async (req) => {
       })
       .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 
-    return new Response(JSON.stringify({ articles: allArticles }), {
+    // Balance the feed with left, center, and right-leaning articles
+    const balancedArticles = balanceArticles(allArticles);
+
+    return new Response(JSON.stringify({ articles: balancedArticles }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
