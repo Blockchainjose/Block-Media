@@ -78,9 +78,6 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
               Start Reading Free
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
-            <Button variant="outline" size="lg" className="text-lg h-14 px-8">
-              Watch Demo
-            </Button>
           </motion.div>
 
           {/* Feature pills */}
