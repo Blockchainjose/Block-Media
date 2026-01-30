@@ -1,4 +1,9 @@
 @tailwind base;
+
+:root {
+  --chart-positive: 142 76% 36%;
+  --chart-negative: 0 84% 60%;
+}
 @tailwind components;
 @tailwind utilities;
 

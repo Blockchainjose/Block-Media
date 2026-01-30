@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.fetch-quotes]
 verify_jwt = false
+
+[functions.fetch-historical]
+verify_jwt = false
+
+[functions.fetch-crypto-news]
+verify_jwt = false
