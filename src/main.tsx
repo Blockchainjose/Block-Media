@@ -11,17 +11,14 @@ const posthogHost = import.meta.env.VITE_PUBLIC_POSTHOG_HOST;
 if (posthogKey) {
   posthog.init(posthogKey, {
     api_host: posthogHost || "https://us.i.posthog.com",
+    defaults: '2025-11-30',  // ⬅️ ADDED: Configuration snapshot date
     person_profiles: "identified_only",
     
-    // Pageview and pageleave tracking
+    // Pageview and pageleave tracking (pageleave includes scroll depth automatically)
     capture_pageview: true,
-    capture_pageleave: true,  // ✅ Already enabled
+    capture_pageleave: true,  // ✅ Already enabled - this captures scroll depth too
     
-    // ⬅️ FIX: Scroll depth tracking
-    capture_heatmaps: true,
-    enable_heatmaps: true,
-    
-    // Better event capture
+    // ⬅️ ADDED: Autocapture for better event tracking
     autocapture: true,
   });
 }
