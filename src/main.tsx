@@ -9,24 +9,20 @@ const posthogKey = import.meta.env.VITE_PUBLIC_POSTHOG_KEY;
 
 if (posthogKey) {
   posthog.init(posthogKey, {
-    api_host: "/ingest",  // ⬅️ CHANGED: Use reverse proxy
-    ui_host: "https://us.i.posthog.com",  // ⬅️ ADDED: PostHog UI host
+    api_host: "/ingest",  // ⬅️ Use the reverse proxy path
+    ui_host: "https://us.i.posthog.com",  // ⬅️ PostHog UI host (change to eu if needed)
     person_profiles: "identified_only",
     
     // Pageview and pageleave tracking
     capture_pageview: true,
-    capture_pageleave: true,  // Already had this ✅
+    capture_pageleave: true,
     
     // ⬅️ ADDED: Scroll depth tracking
-    scroll_root_selector: ['body'],
+    capture_heatmaps: true,  // This enables scroll depth
+    enable_heatmaps: true,
     
-    // ⬅️ ADDED: Better event capture
+    // ⬅️ ADDED: Better autocapture
     autocapture: true,
-    
-    // Optional but recommended
-    session_recording: {
-      recordCrossOriginIframes: false
-    }
   });
 }
 
