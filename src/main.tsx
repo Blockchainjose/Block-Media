@@ -6,21 +6,23 @@ import "./index.css";
 
 // Initialize PostHog only if the API key exists
 const posthogKey = import.meta.env.VITE_PUBLIC_POSTHOG_KEY;
-const posthogHost = import.meta.env.VITE_PUBLIC_POSTHOG_HOST;
 
 if (posthogKey) {
   posthog.init(posthogKey, {
-    api_host: posthogHost || "https://us.i.posthog.com",
-    defaults: '2025-11-30',  // ⬅️ ADDED: Configuration snapshot date
+    api_host: "https://us.i.posthog.com",  // ⬅️ Direct URL, no proxy
+    defaults: '2025-11-30',
     person_profiles: "identified_only",
     
-    // Pageview and pageleave tracking (pageleave includes scroll depth automatically)
+    // Pageview and pageleave tracking
     capture_pageview: true,
-    capture_pageleave: true,  // ✅ Already enabled - this captures scroll depth too
+    capture_pageleave: true,
     
-    // ⬅️ ADDED: Autocapture for better event tracking
+    // Autocapture
     autocapture: true,
   });
+  
+  // ⬅️ ADDED: Make posthog available globally for debugging
+  window.posthog = posthog;
 }
 
 createRoot(document.getElementById("root")!).render(
