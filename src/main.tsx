@@ -6,22 +6,22 @@ import "./index.css";
 
 // Initialize PostHog only if the API key exists
 const posthogKey = import.meta.env.VITE_PUBLIC_POSTHOG_KEY;
+const posthogHost = import.meta.env.VITE_PUBLIC_POSTHOG_HOST;
 
 if (posthogKey) {
   posthog.init(posthogKey, {
-    api_host: "/ingest",  // ⬅️ Use the reverse proxy path
-    ui_host: "https://us.i.posthog.com",  // ⬅️ PostHog UI host (change to eu if needed)
+    api_host: posthogHost || "https://us.i.posthog.com",
     person_profiles: "identified_only",
     
     // Pageview and pageleave tracking
     capture_pageview: true,
-    capture_pageleave: true,
+    capture_pageleave: true,  // ✅ Already enabled
     
-    // ⬅️ ADDED: Scroll depth tracking
-    capture_heatmaps: true,  // This enables scroll depth
+    // ⬅️ FIX: Scroll depth tracking
+    capture_heatmaps: true,
     enable_heatmaps: true,
     
-    // ⬅️ ADDED: Better autocapture
+    // Better event capture
     autocapture: true,
   });
 }
