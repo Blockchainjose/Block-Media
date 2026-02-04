@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Filter, RefreshCw, Grid, List, AlertCircle } from "lucide-react";
+import { Filter, RefreshCw, Grid, List, AlertCircle, ChevronDown } from "lucide-react";
 import { NewsCard } from "./NewsCard";
 import { NewsCardSkeleton } from "./NewsCardSkeleton";
 import { Button } from "./ui/button";
 import { InterestSelector, type Interest } from "./InterestSelector";
+import { TrendingBar } from "./feed/TrendingBar";
 import { useNews } from "@/hooks/useNews";
 import { useSavedArticles } from "@/hooks/useSavedArticles";
 import { Alert, AlertDescription } from "./ui/alert";
@@ -16,9 +18,12 @@ interface NewsFeedProps {
   onInterestChange: (interests: Interest[]) => void;
 }
 
+const ARTICLES_PER_PAGE = 6;
+
 export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [biasFilter, setBiasFilter] = useState<"all" | "left" | "center" | "right">("all");
+  const [visibleCount, setVisibleCount] = useState(ARTICLES_PER_PAGE);
   const { data: articles = [], isLoading, error, refetch, isRefetching } = useNews();
   const { saveArticle, isArticleSaved } = useSavedArticles();
   const { toast } = useToast();
@@ -30,12 +35,20 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
     return matchesInterest && matchesBias;
   });
 
+  const visibleArticles = filteredArticles.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredArticles.length;
+
   const toggleInterest = (interest: Interest) => {
     onInterestChange(
       selectedInterests.includes(interest)
         ? selectedInterests.filter((i) => i !== interest)
         : [...selectedInterests, interest]
     );
+    setVisibleCount(ARTICLES_PER_PAGE); // Reset on filter change
+  };
+
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => prev + ARTICLES_PER_PAGE);
   };
 
   const handleSave = (article: NewsArticle) => {
@@ -50,15 +63,16 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
   };
 
   const handleShare = async (article: NewsArticle) => {
+    const shareUrl = `${window.location.origin}/article/${article.id}`;
     try {
       if (navigator.share) {
         await navigator.share({
           title: article.title,
           text: article.aiSummary,
-          url: article.url,
+          url: shareUrl,
         });
       } else {
-        await navigator.clipboard.writeText(article.url);
+        await navigator.clipboard.writeText(shareUrl);
         toast({
           title: "Link copied",
           description: "Article link copied to clipboard",
@@ -72,6 +86,11 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
   return (
     <section id="feed" className="py-20 relative">
       <div className="container mx-auto px-4">
+        {/* Trending Bar */}
+        {!isLoading && articles.length > 0 && (
+          <TrendingBar articles={articles.slice(0, 5)} />
+        )}
+
         {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -110,7 +129,10 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
                   key={bias}
                   variant={biasFilter === bias ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setBiasFilter(bias)}
+                  onClick={() => {
+                    setBiasFilter(bias);
+                    setVisibleCount(ARTICLES_PER_PAGE);
+                  }}
                   className={biasFilter === bias ? "btn-glow" : ""}
                 >
                   {bias.charAt(0).toUpperCase() + bias.slice(1)}
@@ -176,21 +198,23 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
           </>
         )}
 
-        {/* Featured article */}
-        {!isLoading && filteredArticles.length > 0 && (
+        {/* Featured article with link to article page */}
+        {!isLoading && visibleArticles.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="mb-8"
           >
-            <NewsCard 
-              article={filteredArticles[0]} 
-              featured 
-              isSaved={isArticleSaved(filteredArticles[0].url)}
-              onSave={() => handleSave(filteredArticles[0])}
-              onShare={() => handleShare(filteredArticles[0])}
-            />
+            <Link to={`/article/${visibleArticles[0].id}`} className="block">
+              <NewsCard 
+                article={visibleArticles[0]} 
+                featured 
+                isSaved={isArticleSaved(visibleArticles[0].url)}
+                onSave={() => handleSave(visibleArticles[0])}
+                onShare={() => handleShare(visibleArticles[0])}
+              />
+            </Link>
           </motion.div>
         )}
 
@@ -203,23 +227,47 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
                 : "space-y-4"
             }
           >
-            {filteredArticles.slice(1).map((article, index) => (
+            {visibleArticles.slice(1).map((article, index) => (
               <motion.div
                 key={article.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: index * 0.05 }}
               >
-                <NewsCard 
-                  article={article} 
-                  isSaved={isArticleSaved(article.url)}
-                  onSave={() => handleSave(article)}
-                  onShare={() => handleShare(article)}
-                />
+                <Link to={`/article/${article.id}`} className="block h-full">
+                  <NewsCard 
+                    article={article} 
+                    isSaved={isArticleSaved(article.url)}
+                    onSave={() => handleSave(article)}
+                    onShare={() => handleShare(article)}
+                  />
+                </Link>
               </motion.div>
             ))}
           </div>
+        )}
+
+        {/* Load More Button */}
+        {!isLoading && hasMore && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center mt-12"
+          >
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={handleLoadMore}
+              className="min-w-[200px]"
+            >
+              <ChevronDown className="w-4 h-4 mr-2" />
+              Load More Articles
+            </Button>
+            <p className="text-sm text-muted-foreground mt-2">
+              Showing {visibleArticles.length} of {filteredArticles.length} articles
+            </p>
+          </motion.div>
         )}
 
         {!isLoading && !error && filteredArticles.length === 0 && (

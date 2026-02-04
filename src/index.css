@@ -279,6 +279,15 @@
   .ticker-scroll:hover {
     animation-play-state: paused;
   }
+
+  /* Marquee animation for trending bar */
+  .animate-marquee {
+    animation: marquee 30s linear infinite;
+  }
+
+  .animate-marquee:hover {
+    animation-play-state: paused;
+  }
 }
 
 @keyframes ticker {
@@ -341,9 +350,29 @@
   }
 }
 
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
 /* Framer motion overrides */
 .motion-safe {
   @media (prefers-reduced-motion: no-preference) {
     transition-property: all;
   }
+}
+
+/* Lazy loading images */
+img[loading="lazy"] {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+img[loading="lazy"].loaded,
+img[loading="lazy"]:not([data-src]) {
+  opacity: 1;
 }
