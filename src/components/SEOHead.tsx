@@ -7,6 +7,8 @@ interface SEOHeadProps {
   canonicalPath?: string;
   type?: "website" | "article";
   image?: string;
+  publishedAt?: string;
+  author?: string;
 }
 
 export function SEOHead({
@@ -16,6 +18,8 @@ export function SEOHead({
   canonicalPath = "",
   type = "website",
   image = "/og-image.png",
+  publishedAt,
+  author = "Block Media",
 }: SEOHeadProps) {
   const baseUrl = "https://orbit-news-feed.lovable.app";
   const fullTitle = `${title} | Block Media`;
@@ -45,15 +49,30 @@ export function SEOHead({
     if (keywords) {
       updateMeta("keywords", keywords);
     }
+    updateMeta("author", author);
 
-    // Open Graph
+    // Open Graph - Site name is always Block Media
+    updateMeta("og:site_name", "Block Media", true);
     updateMeta("og:title", fullTitle, true);
     updateMeta("og:description", description, true);
     updateMeta("og:url", canonicalUrl, true);
-    updateMeta("og:type", type, true);
+    updateMeta("og:type", type === "article" ? "article" : "website", true);
     updateMeta("og:image", imageUrl, true);
+    updateMeta("og:image:width", "1200", true);
+    updateMeta("og:image:height", "630", true);
+    updateMeta("og:locale", "en_US", true);
 
-    // Twitter
+    // Article-specific Open Graph
+    if (type === "article" && publishedAt) {
+      updateMeta("article:published_time", publishedAt, true);
+      updateMeta("article:author", author, true);
+      updateMeta("article:publisher", "Block Media", true);
+    }
+
+    // Twitter Card - Always shows Block Media as source
+    updateMeta("twitter:card", "summary_large_image");
+    updateMeta("twitter:site", "@BlockMedia");
+    updateMeta("twitter:creator", "@BlockMedia");
     updateMeta("twitter:title", fullTitle);
     updateMeta("twitter:description", description);
     updateMeta("twitter:image", imageUrl);
@@ -68,7 +87,7 @@ export function SEOHead({
       canonical.setAttribute("href", canonicalUrl);
       document.head.appendChild(canonical);
     }
-  }, [fullTitle, description, keywords, canonicalUrl, type, imageUrl]);
+  }, [fullTitle, description, keywords, canonicalUrl, type, imageUrl, publishedAt, author]);
 
   return null;
 }

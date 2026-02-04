@@ -9,6 +9,7 @@ import Markets from "./pages/Markets";
 import Crypto from "./pages/Crypto";
 import Features from "./pages/Features";
 import About from "./pages/About";
+import Article from "./pages/Article";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfUse from "./pages/TermsOfUse";
 import CookiePolicy from "./pages/CookiePolicy";
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/crypto" element={<Crypto />} />
           <Route path="/features" element={<Features />} />
           <Route path="/about" element={<About />} />
+          <Route path="/article/:id" element={<Article />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfUse />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />

@@ -3,6 +3,7 @@ import posthog from "posthog-js";
 import { PostHogProvider } from "@posthog/react";
 import App from "./App.tsx";
 import "./index.css";
+import "./types/global.d.ts";
 
 // Initialize PostHog only if the API key exists
 const posthogKey = import.meta.env.VITE_PUBLIC_POSTHOG_KEY;
