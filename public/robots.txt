@@ -1,5 +1,5 @@
 # Block Media - Robots.txt
-# https://orbit-news-feed.lovable.app
+# https://blockmediacorp.com
 
 User-agent: Googlebot
 Allow: /
@@ -23,7 +23,7 @@ Allow: /
 Crawl-delay: 2
 
 # Sitemap location
-Sitemap: https://orbit-news-feed.lovable.app/sitemap.xml
+Sitemap: https://blockmediacorp.com/sitemap.xml
 
 # Disallow crawling of admin/private areas
 Disallow: /api/

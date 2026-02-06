@@ -7,7 +7,7 @@ interface ArticleSchemaProps {
 }
 
 export function ArticleSchema({ article, url }: ArticleSchemaProps) {
-  const baseUrl = "https://orbit-news-feed.lovable.app";
+  const baseUrl = "https://blockmediacorp.com";
 
   useEffect(() => {
     // Create NewsArticle schema

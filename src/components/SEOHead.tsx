@@ -21,7 +21,7 @@ export function SEOHead({
   publishedAt,
   author = "Block Media",
 }: SEOHeadProps) {
-  const baseUrl = "https://orbit-news-feed.lovable.app";
+  const baseUrl = "https://blockmediacorp.com";
   const fullTitle = `${title} | Block Media`;
   const canonicalUrl = `${baseUrl}${canonicalPath}`;
   const imageUrl = image.startsWith("http") ? image : `${baseUrl}${image}`;
