@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Markets from "./pages/Markets";
 import Crypto from "./pages/Crypto";
+import CryptoArticle from "./pages/CryptoArticle";
 import Features from "./pages/Features";
 import About from "./pages/About";
 import Article from "./pages/Article";
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/markets" element={<Markets />} />
           <Route path="/crypto" element={<Crypto />} />
+          <Route path="/crypto/:id" element={<CryptoArticle />} />
           <Route path="/features" element={<Features />} />
           <Route path="/about" element={<About />} />
           <Route path="/article/:id" element={<Article />} />
