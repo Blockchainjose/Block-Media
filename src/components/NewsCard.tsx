@@ -86,7 +86,7 @@ export function NewsCard({ article, onSave, onShare, isSaved = false, featured =
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={handleAnalyze}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAnalyze(); }}
                     disabled={isAnalyzing}
                     className="h-7 text-xs"
                   >
@@ -127,10 +127,10 @@ export function NewsCard({ article, onSave, onShare, isSaved = false, featured =
                   <ExternalLink className="w-4 h-4 ml-2" />
                 </a>
               </Button>
-              <Button variant={isSaved ? "secondary" : "outline"} size="icon" onClick={onSave}>
+              <Button variant={isSaved ? "secondary" : "outline"} size="icon" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSave?.(); }}>
                 {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
               </Button>
-              <Button variant="outline" size="icon" onClick={onShare}>
+              <Button variant="outline" size="icon" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onShare?.(); }}>
                 <Share2 className="w-4 h-4" />
               </Button>
             </div>
@@ -166,7 +166,7 @@ export function NewsCard({ article, onSave, onShare, isSaved = false, featured =
           <Button
             variant="secondary"
             size="sm"
-            onClick={handleAnalyze}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAnalyze(); }}
             disabled={isAnalyzing}
             className="absolute top-3 right-3 h-7 text-xs bg-background/80 backdrop-blur-sm"
           >
@@ -223,10 +223,10 @@ export function NewsCard({ article, onSave, onShare, isSaved = false, featured =
             <ExternalLink className="w-3 h-3" />
           </a>
           <div className="flex items-center gap-1">
-            <Button variant={isSaved ? "secondary" : "ghost"} size="icon" className="h-8 w-8" onClick={onSave}>
+            <Button variant={isSaved ? "secondary" : "ghost"} size="icon" className="h-8 w-8" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSave?.(); }}>
               {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onShare}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onShare?.(); }}>
               <Share2 className="w-4 h-4" />
             </Button>
           </div>
