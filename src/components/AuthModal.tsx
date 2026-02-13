@@ -69,8 +69,13 @@ export function AuthModal({ isOpen, onClose, defaultMode = "signin" }: AuthModal
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
+      const isCustomDomain = !window.location.hostname.endsWith(".lovable.app");
+      const redirectUri = isCustomDomain
+        ? `https://orbit-news-feed.lovable.app/auth/callback?return_to=${encodeURIComponent(window.location.origin)}`
+        : window.location.origin;
+
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: redirectUri,
       });
       if (result?.error) throw result.error;
     } catch (error: any) {
