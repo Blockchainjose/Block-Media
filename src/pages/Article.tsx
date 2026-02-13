@@ -14,6 +14,7 @@ import { NewsletterCTA } from "@/components/article/NewsletterCTA";
 import { BiasPercentageBar } from "@/components/ui/BiasIndicator";
 import { MultiPerspectiveSummary } from "@/components/MultiPerspectiveSummary";
 import { Button } from "@/components/ui/button";
+import { CryptoShareModal } from "@/components/crypto/CryptoShareModal";
 import { useNews } from "@/hooks/useNews";
 import { useSavedArticles } from "@/hooks/useSavedArticles";
 import { useArticleAnalysis } from "@/hooks/useArticleAnalysis";
@@ -28,6 +29,7 @@ const Article = () => {
   const { toast } = useToast();
   const [showReadNext, setShowReadNext] = useState(false);
   const [localArticle, setLocalArticle] = useState<NewsArticle | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const article = articles.find((a) => a.id === id);
 
@@ -108,25 +110,8 @@ const Article = () => {
     saveArticle.mutate(localArticle);
   };
 
-  const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/article/${localArticle.id}`;
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: localArticle.title,
-          text: localArticle.aiSummary,
-          url: shareUrl,
-        });
-      } else {
-        await navigator.clipboard.writeText(shareUrl);
-        toast({
-          title: "Link copied",
-          description: "Article link copied to clipboard",
-        });
-      }
-    } catch (error) {
-      console.error("Share failed:", error);
-    }
+  const handleShare = () => {
+    setShowShareModal(true);
   };
 
   const categoryLabel = getCategoryLabel(localArticle.category);
@@ -301,6 +286,21 @@ const Article = () => {
           </motion.button>
         )}
       </AnimatePresence>
+
+      {/* Share Modal */}
+      <CryptoShareModal
+        open={showShareModal}
+        onOpenChange={setShowShareModal}
+        article={{
+          id: localArticle.id,
+          title: localArticle.title,
+          url: localArticle.url,
+          centerPerspective: localArticle.centerPerspective,
+          leftPerspective: localArticle.leftPerspective,
+          rightPerspective: localArticle.rightPerspective,
+          summary: localArticle.aiSummary,
+        }}
+      />
     </div>
   );
 };
