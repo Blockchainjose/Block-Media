@@ -7,6 +7,7 @@ import { NewsCardSkeleton } from "./NewsCardSkeleton";
 import { Button } from "./ui/button";
 import { InterestSelector, type Interest } from "./InterestSelector";
 import { TrendingBar } from "./feed/TrendingBar";
+import { CryptoShareModal } from "./crypto/CryptoShareModal";
 import { useNews } from "@/hooks/useNews";
 import { useSavedArticles } from "@/hooks/useSavedArticles";
 import { Alert, AlertDescription } from "./ui/alert";
@@ -24,6 +25,7 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [biasFilter, setBiasFilter] = useState<"all" | "left" | "center" | "right">("all");
   const [visibleCount, setVisibleCount] = useState(ARTICLES_PER_PAGE);
+  const [shareArticle, setShareArticle] = useState<NewsArticle | null>(null);
   const { data: articles = [], isLoading, error, refetch, isRefetching } = useNews();
   const { saveArticle, isArticleSaved } = useSavedArticles();
   const { toast } = useToast();
@@ -62,25 +64,8 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
     saveArticle.mutate(article);
   };
 
-  const handleShare = async (article: NewsArticle) => {
-    const shareUrl = `${window.location.origin}/article/${article.id}`;
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: article.title,
-          text: article.aiSummary,
-          url: shareUrl,
-        });
-      } else {
-        await navigator.clipboard.writeText(shareUrl);
-        toast({
-          title: "Link copied",
-          description: "Article link copied to clipboard",
-        });
-      }
-    } catch (error) {
-      console.error("Share failed:", error);
-    }
+  const handleShare = (article: NewsArticle) => {
+    setShareArticle(article);
   };
 
   return (
@@ -283,6 +268,23 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
           </motion.div>
         )}
       </div>
+
+      {/* Share Modal */}
+      {shareArticle && (
+        <CryptoShareModal
+          open={!!shareArticle}
+          onOpenChange={(open) => { if (!open) setShareArticle(null); }}
+          article={{
+            id: shareArticle.id,
+            title: shareArticle.title,
+            url: shareArticle.url,
+            centerPerspective: shareArticle.centerPerspective,
+            leftPerspective: shareArticle.leftPerspective,
+            rightPerspective: shareArticle.rightPerspective,
+            summary: shareArticle.aiSummary,
+          }}
+        />
+      )}
     </section>
   );
 }
