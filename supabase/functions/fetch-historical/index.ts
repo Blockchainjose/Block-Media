@@ -138,11 +138,37 @@ serve(async (req) => {
       );
     }
 
-    const { symbol, resolution = "D", days = 30 } = await req.json();
-
-    if (!symbol) {
+    const body = await req.json();
+    if (!body || typeof body !== "object") {
       return new Response(
-        JSON.stringify({ error: "Symbol is required" }),
+        JSON.stringify({ error: "Invalid request body" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { symbol, resolution = "D", days = 30 } = body as Record<string, unknown>;
+
+    if (!symbol || typeof symbol !== "string") {
+      return new Response(
+        JSON.stringify({ error: "Valid symbol is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate days: must be a number between 1 and 365
+    const parsedDays = typeof days === "number" ? days : parseInt(String(days), 10);
+    if (isNaN(parsedDays) || parsedDays < 1 || parsedDays > 365) {
+      return new Response(
+        JSON.stringify({ error: "Days must be between 1 and 365" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate resolution against allowed Finnhub values
+    const allowedResolutions = ["1", "5", "15", "30", "60", "D", "W", "M"];
+    if (typeof resolution !== "string" || !allowedResolutions.includes(resolution)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid resolution. Allowed: 1, 5, 15, 30, 60, D, W, M" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -150,13 +176,13 @@ serve(async (req) => {
     const symbolConfig = SYMBOL_MAP[symbol];
     if (!symbolConfig) {
       return new Response(
-        JSON.stringify({ error: `Unknown symbol: ${symbol}` }),
+        JSON.stringify({ error: "Unknown symbol" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const to = Math.floor(Date.now() / 1000);
-    const from = to - (days * 24 * 60 * 60);
+    const from = to - (parsedDays * 24 * 60 * 60);
     let candles: Candle[] = [];
 
     switch (symbolConfig.type) {
