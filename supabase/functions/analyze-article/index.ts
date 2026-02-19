@@ -1,10 +1,23 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+const ALLOWED_ORIGINS = [
+  "https://blockmediacorp.com",
+  "https://orbit-news-feed.lovable.app",
+  "http://localhost:5173",
+  "http://localhost:8080",
+];
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get("origin") || "";
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[1];
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  };
+}
+
+const sanitize = (text: string) => text.replace(/[<>"']/g, "");
 
 interface ArticleAnalysis {
   biasPercentages: { left: number; center: number; right: number };
@@ -15,6 +28,8 @@ interface ArticleAnalysis {
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -29,10 +44,34 @@ serve(async (req) => {
       );
     }
 
+    // Input length validation
+    if (title.length > 500) {
+      return new Response(
+        JSON.stringify({ error: "Title too long (max 500 characters)" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (content && content.length > 10000) {
+      return new Response(
+        JSON.stringify({ error: "Content too long (max 10000 characters)" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (source && source.length > 200) {
+      return new Response(
+        JSON.stringify({ error: "Source too long (max 200 characters)" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
+
+    const safeTitle = sanitize(title);
+    const safeSource = sanitize(source || "Unknown");
+    const safeContent = sanitize(content || "No content provided - analyze based on title and source");
 
     const systemPrompt = `You are a balanced political news analyst. Your job is to analyze news articles and provide:
 1. A bias analysis with percentages for left, center, and right perspectives (must total 100)
@@ -45,9 +84,9 @@ Be fair, accurate, and highlight genuine differences and agreements between pers
 
     const userPrompt = `Analyze this news article:
 
-Title: ${title}
-Source: ${source || "Unknown"}
-Content: ${content || "No content provided - analyze based on title and source"}
+Title: ${safeTitle}
+Source: ${safeSource}
+Content: ${safeContent}
 
 Respond with a JSON object in this exact format:
 {
@@ -146,7 +185,7 @@ Respond with a JSON object in this exact format:
     console.error("analyze-article error:", error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

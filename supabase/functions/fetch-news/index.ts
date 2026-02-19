@@ -1,10 +1,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+const ALLOWED_ORIGINS = [
+  "https://blockmediacorp.com",
+  "https://orbit-news-feed.lovable.app",
+  "http://localhost:5173",
+  "http://localhost:8080",
+];
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get("origin") || "";
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[1];
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  };
+}
 
 interface NewsArticle {
   id: string;
@@ -69,14 +79,12 @@ function detectBias(source: string): "left" | "center" | "right" {
 function generateBiasPercentages(
   primaryBias: "left" | "center" | "right"
 ): { left: number; center: number; right: number } {
-  // Generate realistic percentages based on primary bias
   const basePercentages = {
     left: primaryBias === "left" ? 50 + Math.random() * 15 : 15 + Math.random() * 15,
     center: primaryBias === "center" ? 45 + Math.random() * 15 : 25 + Math.random() * 15,
     right: primaryBias === "right" ? 50 + Math.random() * 15 : 15 + Math.random() * 15,
   };
 
-  // Normalize to 100%
   const total = basePercentages.left + basePercentages.center + basePercentages.right;
   return {
     left: Math.round((basePercentages.left / total) * 100),
@@ -92,74 +100,29 @@ function detectCategory(
   const text = `${title} ${description}`.toLowerCase();
 
   const cryptoKeywords = [
-    "bitcoin",
-    "btc",
-    "ethereum",
-    "eth",
-    "crypto",
-    "blockchain",
-    "defi",
-    "nft",
-    "altcoin",
-    "dogecoin",
-    "solana",
-    "ripple",
-    "xrp",
+    "bitcoin", "btc", "ethereum", "eth", "crypto", "blockchain", "defi",
+    "nft", "altcoin", "dogecoin", "solana", "ripple", "xrp",
   ];
   const commodityKeywords = [
-    "oil",
-    "gold",
-    "silver",
-    "copper",
-    "wheat",
-    "corn",
-    "natural gas",
-    "commodity",
-    "crude",
-    "metals",
-    "agriculture",
+    "oil", "gold", "silver", "copper", "wheat", "corn", "natural gas",
+    "commodity", "crude", "metals", "agriculture",
   ];
 
-  if (cryptoKeywords.some((kw) => text.includes(kw))) {
-    return "crypto";
-  }
-  if (commodityKeywords.some((kw) => text.includes(kw))) {
-    return "commodities";
-  }
+  if (cryptoKeywords.some((kw) => text.includes(kw))) return "crypto";
+  if (commodityKeywords.some((kw) => text.includes(kw))) return "commodities";
   return "global_markets";
 }
 
-// US-only news sources - strictly limited to 8 outlets balanced across political spectrum
-// Left-leaning sources
-const LEFT_SOURCES = [
-  "cnn.com",
-  "msnbc.com",
-  "nytimes.com",
-];
-
-// Center sources
-const CENTER_SOURCES = [
-  "cnbc.com",
-  "wsj.com",
-  "marketwatch.com",
-];
-
-// Right-leaning sources
-const RIGHT_SOURCES = [
-  "foxnews.com",
-  "foxbusiness.com",
-];
-
-// Combined US sources for API queries (8 total outlets)
+const LEFT_SOURCES = ["cnn.com", "msnbc.com", "nytimes.com"];
+const CENTER_SOURCES = ["cnbc.com", "wsj.com", "marketwatch.com"];
+const RIGHT_SOURCES = ["foxnews.com", "foxbusiness.com"];
 const US_NEWS_SOURCES = [...LEFT_SOURCES, ...CENTER_SOURCES, ...RIGHT_SOURCES];
 
-// Helper to check if source is from allowed list
 function isAllowedSource(source: string): boolean {
   const lowerSource = source.toLowerCase();
   return US_NEWS_SOURCES.some(allowed => lowerSource.includes(allowed.replace('.com', '')));
 }
 
-// Balance articles by political leaning
 function balanceArticles(articles: NewsArticle[]): NewsArticle[] {
   const leftArticles = articles.filter(a => a.politicalBias === "left");
   const centerArticles = articles.filter(a => a.politicalBias === "center");
@@ -168,7 +131,6 @@ function balanceArticles(articles: NewsArticle[]): NewsArticle[] {
   const balanced: NewsArticle[] = [];
   const maxPerCategory = Math.max(leftArticles.length, centerArticles.length, rightArticles.length);
   
-  // Interleave articles from each category for balanced representation
   for (let i = 0; i < maxPerCategory; i++) {
     if (leftArticles[i]) balanced.push(leftArticles[i]);
     if (centerArticles[i]) balanced.push(centerArticles[i]);
@@ -181,29 +143,22 @@ function balanceArticles(articles: NewsArticle[]): NewsArticle[] {
 async function fetchMarketauxNews(apiKey: string, sources?: string[]): Promise<NewsArticle[]> {
   try {
     let url = `https://api.marketaux.com/v1/news/all?api_token=${apiKey}&language=en&filter_entities=true&limit=15`;
-    
-    // Add source filter if specified
     if (sources && sources.length > 0) {
       url += `&domains=${sources.join(",")}`;
     }
     
     const response = await fetch(url);
-    
     if (!response.ok) {
       console.error("Marketaux API error:", response.status, await response.text());
       return [];
     }
 
     const data = await response.json();
-    
-    if (!data.data || !Array.isArray(data.data)) {
-      return [];
-    }
+    if (!data.data || !Array.isArray(data.data)) return [];
 
     return data.data.map((article: any, index: number) => {
       const bias = detectBias(article.source || "unknown");
       const category = detectCategory(article.title || "", article.description || "");
-      
       return {
         id: `marketaux-${article.uuid || index}`,
         title: article.title || "Untitled",
@@ -226,25 +181,19 @@ async function fetchMarketauxNews(apiKey: string, sources?: string[]): Promise<N
 
 async function fetchFinnhubNews(apiKey: string): Promise<NewsArticle[]> {
   try {
-    // Fetch general market news
     const url = `https://finnhub.io/api/v1/news?category=general&token=${apiKey}`;
     const response = await fetch(url);
-    
     if (!response.ok) {
       console.error("Finnhub API error:", response.status, await response.text());
       return [];
     }
 
     const data = await response.json();
-    
-    if (!Array.isArray(data)) {
-      return [];
-    }
+    if (!Array.isArray(data)) return [];
 
     return data.slice(0, 10).map((article: any, index: number) => {
       const bias = detectBias(article.source || "unknown");
       const category = detectCategory(article.headline || "", article.summary || "");
-      
       return {
         id: `finnhub-${article.id || index}`,
         title: article.headline || "Untitled",
@@ -266,7 +215,8 @@ async function fetchFinnhubNews(apiKey: string): Promise<NewsArticle[]> {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -283,32 +233,22 @@ serve(async (req) => {
       );
     }
 
-    // Fetch from all sources in parallel:
-    // 1. US-only sources from Marketaux
-    // 2. Finnhub general news (will be filtered by source later)
     const [marketauxArticles, finnhubArticles] = await Promise.all([
       fetchMarketauxNews(marketauxKey, US_NEWS_SOURCES),
       fetchFinnhubNews(finnhubKey),
     ]);
 
-    // Combine all articles, filter to allowed sources, and deduplicate by title
     const seenTitles = new Set<string>();
     const allArticles = [...marketauxArticles, ...finnhubArticles]
       .filter(article => {
-        // Only include articles from allowed US sources
-        if (!isAllowedSource(article.source)) {
-          return false;
-        }
+        if (!isAllowedSource(article.source)) return false;
         const normalizedTitle = article.title.toLowerCase().trim();
-        if (seenTitles.has(normalizedTitle)) {
-          return false;
-        }
+        if (seenTitles.has(normalizedTitle)) return false;
         seenTitles.add(normalizedTitle);
         return true;
       })
       .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 
-    // Balance the feed with left, center, and right-leaning articles
     const balancedArticles = balanceArticles(allArticles);
 
     return new Response(JSON.stringify({ articles: balancedArticles }), {
@@ -318,7 +258,7 @@ serve(async (req) => {
     console.error("Error fetching news:", error);
     return new Response(
       JSON.stringify({ error: "Failed to fetch news" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

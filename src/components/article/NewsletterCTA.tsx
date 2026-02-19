@@ -42,11 +42,10 @@ export function NewsletterCTA() {
         description: "You'll receive our weekly digest soon.",
       });
     } catch (error: any) {
+      // Generic error to avoid revealing whether an email is already subscribed
       toast({
-        title: "Subscription failed",
-        description: error.message.includes("duplicate")
-          ? "This email is already subscribed."
-          : "Something went wrong. Please try again.",
+        title: "Something went wrong",
+        description: "Please try again later.",
         variant: "destructive",
       });
     } finally {

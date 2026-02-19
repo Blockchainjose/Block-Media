@@ -52,11 +52,10 @@ export function NewsletterForm() {
         description: "You'll receive your first newsletter soon.",
       });
     } catch (error: any) {
+      // Generic error to avoid revealing whether an email is already subscribed
       toast({
-        title: "Subscription failed",
-        description: error.message === "duplicate key value violates unique constraint \"newsletter_subscriptions_email_key\""
-          ? "This email is already subscribed."
-          : "Something went wrong. Please try again.",
+        title: "Something went wrong",
+        description: "Please try again later.",
         variant: "destructive",
       });
     } finally {
