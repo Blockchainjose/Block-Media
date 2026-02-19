@@ -18,7 +18,18 @@ function getCorsHeaders(req: Request) {
   };
 }
 
-const sanitize = (text: string) => text.replace(/[<>"']/g, "");
+function sanitizeInput(text: unknown, maxLength: number): string {
+  if (typeof text !== "string") return "";
+  // Remove null bytes and ASCII control characters
+  let cleaned = text.replace(/[\x00-\x1F\x7F]/g, "");
+  // Collapse excessive whitespace
+  cleaned = cleaned.replace(/\s+/g, " ").trim();
+  // Truncate to max length
+  cleaned = cleaned.substring(0, maxLength);
+  // Remove potentially dangerous characters
+  cleaned = cleaned.replace(/[<>"'`]/g, "");
+  return cleaned;
+}
 
 interface ArticleAnalysis {
   biasPercentages: { left: number; center: number; right: number };
@@ -86,29 +97,37 @@ serve(async (req) => {
   }
 
   try {
-    const { title, content, source } = await req.json();
-
-    if (!title) {
+    const body = await req.json();
+    if (!body || typeof body !== "object") {
       return new Response(
-        JSON.stringify({ error: "Title is required" }),
+        JSON.stringify({ error: "Invalid request body" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Input length validation
-    if (title.length > 500) {
+    const { title, content, source } = body as Record<string, unknown>;
+
+    if (!title || typeof title !== "string" || title.trim().length === 0) {
+      return new Response(
+        JSON.stringify({ error: "Valid title is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Input length validation (before sanitization)
+    if (typeof title === "string" && title.length > 500) {
       return new Response(
         JSON.stringify({ error: "Title too long (max 500 characters)" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    if (content && content.length > 10000) {
+    if (content && typeof content === "string" && content.length > 10000) {
       return new Response(
         JSON.stringify({ error: "Content too long (max 10000 characters)" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    if (source && source.length > 200) {
+    if (source && typeof source === "string" && source.length > 200) {
       return new Response(
         JSON.stringify({ error: "Source too long (max 200 characters)" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -120,9 +139,9 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const safeTitle = sanitize(title);
-    const safeSource = sanitize(source || "Unknown");
-    const safeContent = sanitize(content || "No content provided - analyze based on title and source");
+    const safeTitle = sanitizeInput(title, 500);
+    const safeSource = sanitizeInput(source || "Unknown", 200);
+    const safeContent = sanitizeInput(content || "No content provided - analyze based on title and source", 10000);
 
     const systemPrompt = `You are a balanced political news analyst. Your job is to analyze news articles and provide:
 1. A bias analysis with percentages for left, center, and right perspectives (must total 100)
