@@ -1,10 +1,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+const ALLOWED_ORIGINS = [
+  "https://blockmediacorp.com",
+  "https://orbit-news-feed.lovable.app",
+  "http://localhost:5173",
+  "http://localhost:8080",
+];
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get("origin") || "";
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[1];
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  };
+}
 
 interface Candle {
   timestamp: number;
@@ -15,13 +25,10 @@ interface Candle {
   volume: number;
 }
 
-// Symbol mappings for different asset types (using ETF proxies for indices/commodities)
 const SYMBOL_MAP: Record<string, { finnhubSymbol: string; type: "stock" | "crypto" | "forex" }> = {
-  // Index ETFs
   "S&P 500": { finnhubSymbol: "SPY", type: "stock" },
   "NASDAQ": { finnhubSymbol: "QQQ", type: "stock" },
   "DOW": { finnhubSymbol: "DIA", type: "stock" },
-  // Stocks (MAG7 + additional)
   "AAPL": { finnhubSymbol: "AAPL", type: "stock" },
   "MSFT": { finnhubSymbol: "MSFT", type: "stock" },
   "GOOGL": { finnhubSymbol: "GOOGL", type: "stock" },
@@ -31,13 +38,11 @@ const SYMBOL_MAP: Record<string, { finnhubSymbol: string; type: "stock" | "crypt
   "TSLA": { finnhubSymbol: "TSLA", type: "stock" },
   "PLTR": { finnhubSymbol: "PLTR", type: "stock" },
   "CRWV": { finnhubSymbol: "CRWV", type: "stock" },
-  // Crypto
   "BTC": { finnhubSymbol: "BINANCE:BTCUSDT", type: "crypto" },
   "ETH": { finnhubSymbol: "BINANCE:ETHUSDT", type: "crypto" },
   "SOL": { finnhubSymbol: "BINANCE:SOLUSDT", type: "crypto" },
   "XRP": { finnhubSymbol: "BINANCE:XRPUSDT", type: "crypto" },
   "BNB": { finnhubSymbol: "BINANCE:BNBUSDT", type: "crypto" },
-  // Commodity ETFs
   "Gold": { finnhubSymbol: "GLD", type: "stock" },
   "Silver": { finnhubSymbol: "SLV", type: "stock" },
   "Platinum": { finnhubSymbol: "PPLT", type: "stock" },
@@ -47,120 +52,58 @@ const SYMBOL_MAP: Record<string, { finnhubSymbol: string; type: "stock" | "crypt
 
 async function fetchStockCandles(symbol: string, apiKey: string, resolution: string, from: number, to: number): Promise<Candle[]> {
   const url = `https://finnhub.io/api/v1/stock/candle?symbol=${encodeURIComponent(symbol)}&resolution=${resolution}&from=${from}&to=${to}&token=${apiKey}`;
-  
   try {
     const response = await fetch(url);
-    if (!response.ok) {
-      console.error(`Finnhub candle error for ${symbol}:`, response.status);
-      return [];
-    }
-    
+    if (!response.ok) { console.error(`Finnhub candle error for ${symbol}:`, response.status); return []; }
     const data = await response.json();
-    
-    if (data.s !== "ok" || !data.t) {
-      console.log(`No candle data for ${symbol}:`, data);
-      return [];
-    }
-    
+    if (data.s !== "ok" || !data.t) { console.log(`No candle data for ${symbol}:`, data); return []; }
     const candles: Candle[] = [];
     for (let i = 0; i < data.t.length; i++) {
-      candles.push({
-        timestamp: data.t[i] * 1000,
-        open: data.o[i],
-        high: data.h[i],
-        low: data.l[i],
-        close: data.c[i],
-        volume: data.v[i] || 0,
-      });
+      candles.push({ timestamp: data.t[i] * 1000, open: data.o[i], high: data.h[i], low: data.l[i], close: data.c[i], volume: data.v[i] || 0 });
     }
-    
     return candles;
-  } catch (error) {
-    console.error(`Error fetching candles for ${symbol}:`, error);
-    return [];
-  }
+  } catch (error) { console.error(`Error fetching candles for ${symbol}:`, error); return []; }
 }
 
 async function fetchCryptoCandles(symbol: string, apiKey: string, resolution: string, from: number, to: number): Promise<Candle[]> {
   const url = `https://finnhub.io/api/v1/crypto/candle?symbol=${encodeURIComponent(symbol)}&resolution=${resolution}&from=${from}&to=${to}&token=${apiKey}`;
-  
   try {
     const response = await fetch(url);
-    if (!response.ok) {
-      console.error(`Finnhub crypto candle error for ${symbol}:`, response.status);
-      return [];
-    }
-    
+    if (!response.ok) { console.error(`Finnhub crypto candle error for ${symbol}:`, response.status); return []; }
     const data = await response.json();
-    
-    if (data.s !== "ok" || !data.t) {
-      console.log(`No crypto candle data for ${symbol}:`, data);
-      return [];
-    }
-    
+    if (data.s !== "ok" || !data.t) { console.log(`No crypto candle data for ${symbol}:`, data); return []; }
     const candles: Candle[] = [];
     for (let i = 0; i < data.t.length; i++) {
-      candles.push({
-        timestamp: data.t[i] * 1000,
-        open: data.o[i],
-        high: data.h[i],
-        low: data.l[i],
-        close: data.c[i],
-        volume: data.v[i] || 0,
-      });
+      candles.push({ timestamp: data.t[i] * 1000, open: data.o[i], high: data.h[i], low: data.l[i], close: data.c[i], volume: data.v[i] || 0 });
     }
-    
     return candles;
-  } catch (error) {
-    console.error(`Error fetching crypto candles for ${symbol}:`, error);
-    return [];
-  }
+  } catch (error) { console.error(`Error fetching crypto candles for ${symbol}:`, error); return []; }
 }
 
 async function fetchForexCandles(symbol: string, apiKey: string, resolution: string, from: number, to: number): Promise<Candle[]> {
   const url = `https://finnhub.io/api/v1/forex/candle?symbol=${encodeURIComponent(symbol)}&resolution=${resolution}&from=${from}&to=${to}&token=${apiKey}`;
-  
   try {
     const response = await fetch(url);
-    if (!response.ok) {
-      console.error(`Finnhub forex candle error for ${symbol}:`, response.status);
-      return [];
-    }
-    
+    if (!response.ok) { console.error(`Finnhub forex candle error for ${symbol}:`, response.status); return []; }
     const data = await response.json();
-    
-    if (data.s !== "ok" || !data.t) {
-      console.log(`No forex candle data for ${symbol}:`, data);
-      return [];
-    }
-    
+    if (data.s !== "ok" || !data.t) { console.log(`No forex candle data for ${symbol}:`, data); return []; }
     const candles: Candle[] = [];
     for (let i = 0; i < data.t.length; i++) {
-      candles.push({
-        timestamp: data.t[i] * 1000,
-        open: data.o[i],
-        high: data.h[i],
-        low: data.l[i],
-        close: data.c[i],
-        volume: data.v[i] || 0,
-      });
+      candles.push({ timestamp: data.t[i] * 1000, open: data.o[i], high: data.h[i], low: data.l[i], close: data.c[i], volume: data.v[i] || 0 });
     }
-    
     return candles;
-  } catch (error) {
-    console.error(`Error fetching forex candles for ${symbol}:`, error);
-    return [];
-  }
+  } catch (error) { console.error(`Error fetching forex candles for ${symbol}:`, error); return []; }
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const finnhubKey = Deno.env.get("FINNHUB_API_KEY");
-
     if (!finnhubKey) {
       console.error("Missing Finnhub API key");
       return new Response(
@@ -188,7 +131,6 @@ serve(async (req) => {
 
     const to = Math.floor(Date.now() / 1000);
     const from = to - (days * 24 * 60 * 60);
-
     let candles: Candle[] = [];
 
     switch (symbolConfig.type) {
@@ -210,7 +152,7 @@ serve(async (req) => {
     console.error("Error fetching historical data:", error);
     return new Response(
       JSON.stringify({ error: "Failed to fetch historical data" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });
