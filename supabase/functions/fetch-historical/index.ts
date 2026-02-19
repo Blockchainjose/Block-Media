@@ -16,6 +16,23 @@ function getCorsHeaders(req: Request) {
   };
 }
 
+// IP-based rate limiting: 30 requests per minute
+const ipRateMap = new Map<string, { count: number; reset: number }>();
+const RATE_LIMIT = 30;
+const RATE_WINDOW_MS = 60_000;
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = ipRateMap.get(ip);
+  if (!entry || now > entry.reset) {
+    ipRateMap.set(ip, { count: 1, reset: now + RATE_WINDOW_MS });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT) return false;
+  entry.count++;
+  return true;
+}
+
 interface Candle {
   timestamp: number;
   open: number;
@@ -100,6 +117,15 @@ serve(async (req) => {
 
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // IP-based rate limiting
+  const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  if (!checkRateLimit(clientIp)) {
+    return new Response(
+      JSON.stringify({ error: "Too many requests, please try again later." }),
+      { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 
   try {

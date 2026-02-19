@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const ALLOWED_ORIGINS = [
   "https://blockmediacorp.com",
@@ -17,11 +18,60 @@ function getCorsHeaders(req: Request) {
   };
 }
 
+// In-memory rate limit per user: 20 req/min
+const userRateMap = new Map<string, { count: number; reset: number }>();
+const RATE_LIMIT = 20;
+const RATE_WINDOW_MS = 60_000;
+
+function checkRateLimit(key: string): boolean {
+  const now = Date.now();
+  const entry = userRateMap.get(key);
+  if (!entry || now > entry.reset) {
+    userRateMap.set(key, { count: 1, reset: now + RATE_WINDOW_MS });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT) return false;
+  entry.count++;
+  return true;
+}
+
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
 
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Require authentication
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    { global: { headers: { Authorization: authHeader } } }
+  );
+
+  const token = authHeader.replace("Bearer ", "");
+  const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+  if (claimsError || !claimsData?.claims) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  const userId = claimsData.claims.sub as string;
+  if (!checkRateLimit(userId)) {
+    return new Response(
+      JSON.stringify({ error: "Rate limit exceeded, please try again later." }),
+      { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 
   try {
