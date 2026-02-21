@@ -97,6 +97,7 @@ export type Database = {
           created_at: string
           id: string
           likes_count: number
+          market_category: Database["public"]["Enums"]["market_category"]
           replies_count: number
           sentiment: Database["public"]["Enums"]["post_sentiment"] | null
           updated_at: string
@@ -108,6 +109,7 @@ export type Database = {
           created_at?: string
           id?: string
           likes_count?: number
+          market_category?: Database["public"]["Enums"]["market_category"]
           replies_count?: number
           sentiment?: Database["public"]["Enums"]["post_sentiment"] | null
           updated_at?: string
@@ -119,10 +121,41 @@ export type Database = {
           created_at?: string
           id?: string
           likes_count?: number
+          market_category?: Database["public"]["Enums"]["market_category"]
           replies_count?: number
           sentiment?: Database["public"]["Enums"]["post_sentiment"] | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      content_reports: {
+        Row: {
+          content_id: string
+          content_type: string
+          created_at: string
+          id: string
+          reason: string
+          reporter_id: string
+          status: string
+        }
+        Insert: {
+          content_id: string
+          content_type: string
+          created_at?: string
+          id?: string
+          reason: string
+          reporter_id: string
+          status?: string
+        }
+        Update: {
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          reason?: string
+          reporter_id?: string
+          status?: string
         }
         Relationships: []
       }
@@ -289,6 +322,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_badges: {
+        Row: {
+          awarded_at: string
+          badge: Database["public"]["Enums"]["badge_type"]
+          id: string
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          badge: Database["public"]["Enums"]["badge_type"]
+          id?: string
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          badge?: Database["public"]["Enums"]["badge_type"]
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_interests: {
         Row: {
           created_at: string
@@ -318,7 +372,25 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      badge_type:
+        | "crypto_analyst"
+        | "options_trader"
+        | "top_contributor"
+        | "stock_guru"
+        | "commodity_expert"
+        | "macro_strategist"
+        | "first_post"
+        | "popular_post"
+        | "veteran"
       interest_category: "crypto" | "global_markets" | "commodities"
+      market_category:
+        | "crypto"
+        | "stocks"
+        | "options"
+        | "commodities"
+        | "forex"
+        | "macro"
+        | "general"
       political_bias: "left" | "center" | "right"
       post_sentiment: "bullish" | "bearish"
     }
@@ -448,7 +520,27 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      badge_type: [
+        "crypto_analyst",
+        "options_trader",
+        "top_contributor",
+        "stock_guru",
+        "commodity_expert",
+        "macro_strategist",
+        "first_post",
+        "popular_post",
+        "veteran",
+      ],
       interest_category: ["crypto", "global_markets", "commodities"],
+      market_category: [
+        "crypto",
+        "stocks",
+        "options",
+        "commodities",
+        "forex",
+        "macro",
+        "general",
+      ],
       political_bias: ["left", "center", "right"],
       post_sentiment: ["bullish", "bearish"],
     },

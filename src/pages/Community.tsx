@@ -1,21 +1,21 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { MessageSquare, Filter, X, Loader2 } from "lucide-react";
+import { MessageSquare, X, Loader2 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEOHead } from "@/components/SEOHead";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CreatePostForm } from "@/components/community/CreatePostForm";
 import { PostCard } from "@/components/community/PostCard";
 import { SentimentBar } from "@/components/community/SentimentBar";
 import { useCommunityPosts } from "@/hooks/useCommunityPosts";
+import { ROOM_TABS } from "@/lib/market-utils";
 
 export default function Community() {
   const {
     posts, loading, createPost, toggleLike, fetchReplies, addReply,
-    filter, setFilter, tagFilter, setTagFilter,
+    filter, setFilter, roomFilter, setRoomFilter, tagFilter, setTagFilter,
     bullishPercent, bearishPercent,
   } = useCommunityPosts();
 
@@ -31,18 +31,30 @@ export default function Community() {
       <main className="container mx-auto px-4 py-8 mt-16">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           {/* Page header */}
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-4">
             <MessageSquare className="h-6 w-6 text-primary" />
             <h1 className="text-2xl font-display font-bold">Community</h1>
+          </div>
+
+          {/* Room tabs */}
+          <div className="mb-6 overflow-x-auto">
+            <Tabs value={roomFilter} onValueChange={(v) => setRoomFilter(v as any)}>
+              <TabsList className="h-9 bg-muted/50">
+                {ROOM_TABS.map(tab => (
+                  <TabsTrigger key={tab.value} value={tab.value} className="text-xs px-3">
+                    {tab.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Main feed */}
             <div className="lg:col-span-2 space-y-4">
-              {/* Create post */}
               <CreatePostForm onSubmit={createPost} />
 
-              {/* Filters */}
+              {/* Sentiment + tag filters */}
               <div className="flex items-center gap-2 flex-wrap">
                 <Tabs value={filter} onValueChange={(v) => setFilter(v as any)}>
                   <TabsList className="h-8">
@@ -116,6 +128,7 @@ export default function Community() {
                   <li>• Use $TICKER tags to reference assets</li>
                   <li>• Max 500 characters per post</li>
                   <li>• No financial advice — share opinions only</li>
+                  <li>• Rate limit: max 10 posts per hour</li>
                 </ul>
               </div>
             </aside>

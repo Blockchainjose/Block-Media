@@ -66,6 +66,14 @@
     --bias-center: 0 0% 60%;
     --bias-right: 0 84% 50%;
 
+    /* Market category colors */
+    --market-crypto: 142 76% 36%;
+    --market-stocks: 210 90% 55%;
+    --market-options: 270 70% 55%;
+    --market-commodities: 45 93% 47%;
+    --market-forex: 180 70% 45%;
+    --market-macro: 0 0% 60%;
+
     --sidebar-background: 0 0% 6%;
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 0 84% 50%;
