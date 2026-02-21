@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { User, Mail, Camera, Save } from "lucide-react";
+import { User, Mail, Camera, Save, Star, FileText } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,12 +16,14 @@ export function ProfileSection() {
   const { profile, isLoading, updateProfile } = useUserProfile();
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [bio, setBio] = useState("");
   const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
     if (profile) {
       setDisplayName(profile.display_name || "");
       setAvatarUrl(profile.avatar_url || "");
+      setBio((profile as any).bio || "");
     }
   }, [profile]);
 
@@ -38,6 +41,7 @@ export function ProfileSection() {
     updateProfile.mutate({
       display_name: displayName || undefined,
       avatar_url: avatarUrl || undefined,
+      bio: bio || undefined,
     });
   };
 
@@ -89,6 +93,12 @@ export function ProfileSection() {
               <div>
                 <CardTitle>{displayName || "Anonymous User"}</CardTitle>
                 <CardDescription>{userEmail}</CardDescription>
+                {profile?.reputation !== undefined && (
+                  <div className="flex items-center gap-1 mt-1 text-sm text-primary">
+                    <Star className="h-4 w-4" />
+                    <span>Reputation: {profile.reputation}</span>
+                  </div>
+                )}
               </div>
             </div>
           </CardHeader>
@@ -104,6 +114,22 @@ export function ProfileSection() {
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="Enter your display name"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bio" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Bio
+              </Label>
+              <Textarea
+                id="bio"
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="Tell others about yourself..."
+                maxLength={300}
+                className="min-h-[80px]"
+              />
+              <p className="text-xs text-muted-foreground">{bio.length}/300</p>
             </div>
 
             <div className="space-y-2">

@@ -64,6 +64,7 @@ export function Header() {
     { label: "Feed", href: "/#feed" },
     { label: "Markets", href: "/markets" },
     { label: "Crypto", href: "/crypto" },
+    { label: "Community", href: "/community" },
     { label: "Newsletter", href: "/#newsletter" },
   ];
 

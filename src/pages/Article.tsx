@@ -15,6 +15,7 @@ import { BiasPercentageBar } from "@/components/ui/BiasIndicator";
 import { MultiPerspectiveSummary } from "@/components/MultiPerspectiveSummary";
 import { Button } from "@/components/ui/button";
 import { CryptoShareModal } from "@/components/crypto/CryptoShareModal";
+import { CommentSection } from "@/components/community/CommentSection";
 import { useNews } from "@/hooks/useNews";
 import { useSavedArticles } from "@/hooks/useSavedArticles";
 import { useArticleAnalysis } from "@/hooks/useArticleAnalysis";
@@ -245,6 +246,9 @@ const Article = () => {
                   Share
                 </Button>
               </div>
+
+              {/* Comments */}
+              <CommentSection articleId={localArticle.id} />
 
               {/* Newsletter CTA */}
               <NewsletterCTA />

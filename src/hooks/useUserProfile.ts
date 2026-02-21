@@ -7,6 +7,8 @@ interface UserProfile {
   user_id: string;
   display_name: string | null;
   avatar_url: string | null;
+  bio: string | null;
+  reputation: number;
   created_at: string;
   updated_at: string;
 }
@@ -33,7 +35,7 @@ export function useUserProfile() {
   });
 
   const updateProfile = useMutation({
-    mutationFn: async (updates: { display_name?: string; avatar_url?: string }) => {
+    mutationFn: async (updates: { display_name?: string; avatar_url?: string; bio?: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("You must be logged in");
 

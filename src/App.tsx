@@ -16,6 +16,7 @@ import TermsOfUse from "./pages/TermsOfUse";
 import CookiePolicy from "./pages/CookiePolicy";
 import NotFound from "./pages/NotFound";
 import AuthCallback from "./pages/AuthCallback";
+import Community from "./pages/Community";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/community" element={<Community />} />
           <Route path="/markets" element={<Markets />} />
           <Route path="/crypto" element={<Crypto />} />
           <Route path="/crypto/:id" element={<CryptoArticle />} />
