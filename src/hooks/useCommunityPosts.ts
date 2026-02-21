@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import type { MarketCategory } from "@/lib/market-utils";
 
 export interface CommunityPost {
   id: string;
@@ -8,6 +9,7 @@ export interface CommunityPost {
   content: string;
   sentiment: "bullish" | "bearish" | null;
   asset_tags: string[];
+  market_category: MarketCategory;
   likes_count: number;
   replies_count: number;
   created_at: string;
@@ -15,9 +17,11 @@ export interface CommunityPost {
     display_name: string | null;
     avatar_url: string | null;
     reputation: number;
+    badges: string[];
   };
   liked?: boolean;
 }
+
 
 export interface PostReply {
   id: string;
@@ -33,11 +37,13 @@ export interface PostReply {
 }
 
 type FilterMode = "all" | "bullish" | "bearish";
+type RoomFilter = "all" | MarketCategory;
 
 export function useCommunityPosts() {
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterMode>("all");
+  const [roomFilter, setRoomFilter] = useState<RoomFilter>("all");
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -51,6 +57,9 @@ export function useCommunityPosts() {
     if (filter !== "all") {
       query = query.eq("sentiment", filter);
     }
+    if (roomFilter !== "all") {
+      query = query.eq("market_category", roomFilter);
+    }
     if (tagFilter) {
       query = query.contains("asset_tags", [tagFilter]);
     }
@@ -60,12 +69,17 @@ export function useCommunityPosts() {
 
     const userIds = [...new Set((data || []).map((p: any) => p.user_id))];
     let profilesMap: Record<string, any> = {};
+    let badgesMap: Record<string, string[]> = {};
     if (userIds.length > 0) {
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, display_name, avatar_url, reputation")
-        .in("user_id", userIds);
-      if (profiles) profiles.forEach((p: any) => { profilesMap[p.user_id] = p; });
+      const [profilesRes, badgesRes] = await Promise.all([
+        supabase.from("profiles").select("user_id, display_name, avatar_url, reputation").in("user_id", userIds),
+        supabase.from("user_badges").select("user_id, badge").in("user_id", userIds),
+      ]);
+      if (profilesRes.data) profilesRes.data.forEach((p: any) => { profilesMap[p.user_id] = p; });
+      if (badgesRes.data) badgesRes.data.forEach((b: any) => {
+        if (!badgesMap[b.user_id]) badgesMap[b.user_id] = [];
+        badgesMap[b.user_id].push(b.badge);
+      });
     }
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -81,11 +95,14 @@ export function useCommunityPosts() {
 
     setPosts((data || []).map((p: any) => ({
       ...p,
-      profile: profilesMap[p.user_id] || { display_name: null, avatar_url: null, reputation: 0 },
+      profile: {
+        ...(profilesMap[p.user_id] || { display_name: null, avatar_url: null, reputation: 0 }),
+        badges: badgesMap[p.user_id] || [],
+      },
       liked: likesSet.has(p.id),
     })));
     setLoading(false);
-  }, [filter, tagFilter]);
+  }, [filter, roomFilter, tagFilter]);
 
   useEffect(() => { fetchPosts(); }, [fetchPosts]);
 
@@ -98,10 +115,23 @@ export function useCommunityPosts() {
     return () => { supabase.removeChannel(channel); };
   }, [fetchPosts]);
 
-  const createPost = async (content: string, sentiment: "bullish" | "bearish" | null, assetTags: string[]) => {
+  const createPost = async (content: string, sentiment: "bullish" | "bearish" | null, assetTags: string[], marketCategory: MarketCategory = "general") => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast({ title: "Sign in required", description: "Please sign in to post.", variant: "destructive" });
+      return false;
+    }
+
+    // Rate limiting: check last hour's posts
+    const oneHourAgo = new Date(Date.now() - 3600000).toISOString();
+    const { count } = await supabase
+      .from("community_posts")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", oneHourAgo);
+    
+    if (count && count >= 10) {
+      toast({ title: "Rate limited", description: "Max 10 posts per hour. Please wait.", variant: "destructive" });
       return false;
     }
 
@@ -110,6 +140,7 @@ export function useCommunityPosts() {
       content: content.trim(),
       sentiment,
       asset_tags: assetTags,
+      market_category: marketCategory,
     });
 
     if (error) {
@@ -187,7 +218,7 @@ export function useCommunityPosts() {
 
   return {
     posts, loading, createPost, toggleLike, fetchReplies, addReply,
-    filter, setFilter, tagFilter, setTagFilter,
+    filter, setFilter, roomFilter, setRoomFilter, tagFilter, setTagFilter,
     bullishPercent, bearishPercent: 100 - bullishPercent,
   };
 }

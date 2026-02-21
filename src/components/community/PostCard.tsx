@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Heart, MessageCircle, Share2, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Loader2, Send } from "lucide-react";
+import { Heart, MessageCircle, Share2, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Loader2, Send, Flag } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { UserAvatar } from "./UserAvatar";
+import { ReportDialog } from "./ReportDialog";
+import { getTagColorClass, getCategoryLabel, getCategoryColorClass, BADGE_LABELS, type MarketCategory } from "@/lib/market-utils";
 import type { CommunityPost, PostReply } from "@/hooks/useCommunityPosts";
 
 interface PostCardProps {
@@ -21,6 +23,7 @@ export function PostCard({ post, onLike, onTagClick, fetchReplies, addReply }: P
   const [loadingReplies, setLoadingReplies] = useState(false);
   const [replyContent, setReplyContent] = useState("");
   const [submittingReply, setSubmittingReply] = useState(false);
+  const [showReport, setShowReport] = useState(false);
 
   const displayName = post.profile?.display_name || "Anonymous";
   const timeAgo = getTimeAgo(post.created_at);
@@ -51,7 +54,6 @@ export function PostCard({ post, onLike, onTagClick, fetchReplies, addReply }: P
     navigator.clipboard.writeText(`${window.location.origin}/community?post=${post.id}`);
   };
 
-  // Render content with $TAG highlighting
   const renderContent = (text: string) => {
     return text.replace(/(\$[A-Z]{1,10})/g, '<span class="text-primary font-semibold cursor-pointer hover:underline">$1</span>');
   };
@@ -62,7 +64,6 @@ export function PostCard({ post, onLike, onTagClick, fetchReplies, addReply }: P
       animate={{ opacity: 1, y: 0 }}
       className="p-4 rounded-xl bg-card border border-border hover:border-primary/20 transition-colors"
     >
-      {/* Header */}
       <div className="flex items-start gap-3">
         <UserAvatar displayName={displayName} avatarUrl={post.profile?.avatar_url || null} className="h-10 w-10" />
         <div className="flex-1 min-w-0">
@@ -71,10 +72,27 @@ export function PostCard({ post, onLike, onTagClick, fetchReplies, addReply }: P
             {post.profile?.reputation !== undefined && post.profile.reputation > 0 && (
               <span className="text-xs px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">+{post.profile.reputation}</span>
             )}
+            {/* Badges */}
+            {post.profile?.badges && post.profile.badges.length > 0 && (
+              <div className="flex gap-1">
+                {post.profile.badges.slice(0, 2).map(b => {
+                  const info = BADGE_LABELS[b];
+                  return info ? (
+                    <span key={b} className="text-xs" title={info.label}>{info.emoji}</span>
+                  ) : null;
+                })}
+              </div>
+            )}
+            {/* Category badge */}
+            {post.market_category && post.market_category !== "general" && (
+              <Badge variant="outline" className={`text-xs ${getCategoryColorClass(post.market_category as MarketCategory)}`}>
+                {getCategoryLabel(post.market_category as MarketCategory)}
+              </Badge>
+            )}
             {post.sentiment && (
               <Badge variant="outline" className={`text-xs ${
-                post.sentiment === "bullish" 
-                  ? "border-green-500/50 text-green-500" 
+                post.sentiment === "bullish"
+                  ? "border-green-500/50 text-green-500"
                   : "border-red-500/50 text-red-500"
               }`}>
                 {post.sentiment === "bullish" ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
@@ -84,7 +102,6 @@ export function PostCard({ post, onLike, onTagClick, fetchReplies, addReply }: P
             <span className="text-xs text-muted-foreground">{timeAgo}</span>
           </div>
 
-          {/* Content */}
           <div
             className="mt-2 text-sm text-foreground/90 whitespace-pre-wrap"
             dangerouslySetInnerHTML={{ __html: renderContent(post.content) }}
@@ -96,14 +113,14 @@ export function PostCard({ post, onLike, onTagClick, fetchReplies, addReply }: P
             }}
           />
 
-          {/* Asset tags */}
+          {/* Color-coded asset tags */}
           {post.asset_tags.length > 0 && (
             <div className="flex gap-1 mt-2 flex-wrap">
               {post.asset_tags.map(tag => (
                 <Badge
                   key={tag}
-                  variant="secondary"
-                  className="text-xs cursor-pointer hover:bg-primary/20"
+                  variant="outline"
+                  className={`text-xs cursor-pointer hover:opacity-80 ${getTagColorClass(tag)}`}
                   onClick={() => onTagClick(tag)}
                 >
                   {tag}
@@ -130,6 +147,9 @@ export function PostCard({ post, onLike, onTagClick, fetchReplies, addReply }: P
             </Button>
             <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground" onClick={handleShare}>
               <Share2 className="h-4 w-4 mr-1" />
+            </Button>
+            <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground" onClick={() => setShowReport(true)}>
+              <Flag className="h-4 w-4" />
             </Button>
           </div>
 
@@ -170,6 +190,13 @@ export function PostCard({ post, onLike, onTagClick, fetchReplies, addReply }: P
           )}
         </div>
       </div>
+
+      <ReportDialog
+        open={showReport}
+        onOpenChange={setShowReport}
+        contentType="post"
+        contentId={post.id}
+      />
     </motion.div>
   );
 }
