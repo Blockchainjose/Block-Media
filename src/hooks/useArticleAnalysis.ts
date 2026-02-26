@@ -15,12 +15,6 @@ export function useArticleAnalysis() {
     setAnalyzing(prev => ({ ...prev, [articleId]: true }));
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error("Please sign in to use AI analysis");
-        return null;
-      }
-
       const { data, error } = await supabase.functions.invoke("analyze-article", {
         body: { title, content, source },
       });
