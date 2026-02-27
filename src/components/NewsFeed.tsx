@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Filter, RefreshCw, Grid, List, AlertCircle, ChevronDown } from "lucide-react";
+import { Filter, RefreshCw, Grid, List, AlertCircle, ChevronDown, Flame } from "lucide-react";
 import { NewsCard } from "./NewsCard";
 import { NewsCardSkeleton } from "./NewsCardSkeleton";
 import { Button } from "./ui/button";
 import { InterestSelector, type Interest } from "./InterestSelector";
 import { TrendingBar } from "./feed/TrendingBar";
 import { CryptoShareModal } from "./crypto/CryptoShareModal";
+import { CrossFireCard } from "./crossfire/CrossFireCard";
 import { useNews } from "@/hooks/useNews";
+import { useCrossfireStories } from "@/hooks/useCrossfireStories";
 import { useSavedArticles } from "@/hooks/useSavedArticles";
 import { Alert, AlertDescription } from "./ui/alert";
 import { useToast } from "@/hooks/use-toast";
@@ -24,9 +26,11 @@ const ARTICLES_PER_PAGE = 6;
 export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [biasFilter, setBiasFilter] = useState<"all" | "left" | "center" | "right">("all");
+  const [showCrossFireOnly, setShowCrossFireOnly] = useState(false);
   const [visibleCount, setVisibleCount] = useState(ARTICLES_PER_PAGE);
   const [shareArticle, setShareArticle] = useState<NewsArticle | null>(null);
   const { data: articles = [], isLoading, error, refetch, isRefetching } = useNews();
+  const { data: crossfireStories = [] } = useCrossfireStories();
   const { saveArticle, isArticleSaved } = useSavedArticles();
   const { toast } = useToast();
 
@@ -105,8 +109,21 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
           />
 
           <div className="flex flex-wrap items-center justify-between gap-4">
-            {/* Bias filter */}
-            <div className="flex items-center gap-2">
+            {/* CrossFire + Bias filter */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                variant={showCrossFireOnly ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setShowCrossFireOnly(!showCrossFireOnly);
+                  setVisibleCount(ARTICLES_PER_PAGE);
+                }}
+                className={showCrossFireOnly ? "crossfire-badge border-0" : ""}
+              >
+                <Flame className="w-4 h-4 mr-1" />
+                CrossFire
+              </Button>
+              <div className="w-px h-6 bg-border mx-1" />
               <Filter className="w-4 h-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground mr-2">Perspective:</span>
               {(["all", "left", "center", "right"] as const).map((bias) => (
@@ -163,6 +180,42 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
           </Alert>
         )}
 
+        {/* CrossFire-only mode */}
+        {showCrossFireOnly && !isLoading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {crossfireStories.length > 0 ? (
+              crossfireStories.map((story) => (
+                <CrossFireCard key={story.id} story={story} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <Flame className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-30" />
+                <p className="text-muted-foreground">No CrossFire stories available right now</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* CrossFire highlights in normal feed */}
+        {!showCrossFireOnly && !isLoading && crossfireStories.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-8"
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <Flame className="w-5 h-5 text-primary" />
+              <h3 className="font-display font-bold text-lg">CrossFire Stories</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {crossfireStories.slice(0, 3).map((story) => (
+                <CrossFireCard key={story.id} story={story} />
+              ))}
+            </div>
+          </motion.div>
+        )}
+
         {/* Loading state */}
         {isLoading && (
           <>
@@ -184,7 +237,7 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
         )}
 
         {/* Featured article with link to article page */}
-        {!isLoading && visibleArticles.length > 0 && (
+        {!isLoading && !showCrossFireOnly && visibleArticles.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -204,7 +257,7 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
         )}
 
         {/* Articles grid */}
-        {!isLoading && (
+        {!isLoading && !showCrossFireOnly && (
           <div
             className={
               viewMode === "grid"
@@ -234,7 +287,7 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
         )}
 
         {/* Load More Button */}
-        {!isLoading && hasMore && (
+        {!isLoading && !showCrossFireOnly && hasMore && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
