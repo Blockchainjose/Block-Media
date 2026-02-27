@@ -17,6 +17,8 @@ import CookiePolicy from "./pages/CookiePolicy";
 import NotFound from "./pages/NotFound";
 import AuthCallback from "./pages/AuthCallback";
 import Community from "./pages/Community";
+import CrossFire from "./pages/CrossFire";
+import CrossFireArticle from "./pages/CrossFireArticle";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +35,8 @@ const App = () => (
           <Route path="/markets" element={<Markets />} />
           <Route path="/crypto" element={<Crypto />} />
           <Route path="/crypto/:id" element={<CryptoArticle />} />
+          <Route path="/crossfire" element={<CrossFire />} />
+          <Route path="/crossfire/:id" element={<CrossFireArticle />} />
           <Route path="/features" element={<Features />} />
           <Route path="/about" element={<About />} />
           <Route path="/article/:id" element={<Article />} />
