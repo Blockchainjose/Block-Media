@@ -63,6 +63,7 @@ export function Header() {
   const navLinks = [
     { label: "Feed", href: "/#feed" },
     { label: "CrossFire", href: "/crossfire" },
+    { label: "Policy", href: "/policy" },
     { label: "Markets", href: "/markets" },
     { label: "Crypto", href: "/crypto" },
     { label: "Community", href: "/community" },
