@@ -59,6 +59,7 @@ export default function CrossFireArticle() {
         title={`CrossFire: ${story.neutralHeadline}`}
         description={story.factualSummary}
         canonicalPath={`/crossfire/${story.id}`}
+        image={story.sources[0]?.imageUrl}
       />
       <Header />
 

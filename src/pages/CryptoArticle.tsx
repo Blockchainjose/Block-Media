@@ -111,6 +111,9 @@ export default function CryptoArticle() {
         description={(localArticle.centerPerspective || localArticle.summary || "").slice(0, 160)}
         canonicalPath={`/crypto/${localArticle.id}`}
         type="article"
+        image={localArticle.imageUrl}
+        publishedAt={localArticle.publishedAt}
+        author={localArticle.source}
       />
 
       <Header />
