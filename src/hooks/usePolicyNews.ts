@@ -18,12 +18,7 @@ export function usePolicyNews() {
     queryKey: ["policy-news"],
     queryFn: async (): Promise<PolicyNewsArticle[]> => {
       const { data, error } = await supabase.functions.invoke("fetch-policy-news");
-
-      if (error) {
-        console.error("Error fetching policy news:", error);
-        throw error;
-      }
-
+      if (error) { console.error("Error fetching policy news:", error); throw error; }
       return data?.articles || [];
     },
     staleTime: 5 * 60 * 1000,

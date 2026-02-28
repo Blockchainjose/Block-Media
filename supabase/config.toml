@@ -17,3 +17,12 @@ verify_jwt = false
 
 [functions.generate-share-script]
 verify_jwt = false
+
+[functions.crossfire-analyze]
+verify_jwt = false
+
+[functions.fetch-policy-news]
+verify_jwt = false
+
+[functions.generate-sitemap]
+verify_jwt = false

@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const ALLOWED_ORIGINS = [
   "https://blockmediacorp.com",
@@ -40,11 +41,10 @@ interface PolicyNewsArticle {
   imageUrl: string;
   publishedAt: string;
   summary: string;
-  category: "federal_reserve" | "trade_policy" | "fiscal_policy" | "labor_market" | "housing" | "regulation" | "international" | "general";
+  category: string;
   politicalBias: "left" | "center" | "right";
 }
 
-// Policy topic keywords for categorization
 const FEDERAL_RESERVE_KEYWORDS = ["federal reserve", "fed", "interest rate", "monetary policy", "fomc", "powell", "rate hike", "rate cut", "quantitative", "basis points", "fed meeting"];
 const TRADE_POLICY_KEYWORDS = ["tariff", "trade policy", "import", "export", "trade war", "trade deal", "trade deficit", "customs", "trade agreement", "sanctions", "embargo"];
 const FISCAL_POLICY_KEYWORDS = ["tax bill", "fiscal policy", "tax cut", "tax reform", "deficit", "national debt", "government spending", "budget", "appropriations", "stimulus"];
@@ -53,7 +53,7 @@ const HOUSING_KEYWORDS = ["housing policy", "mortgage", "housing market", "rent 
 const REGULATION_KEYWORDS = ["antitrust", "regulation", "deregulation", "ftc", "sec regulation", "compliance", "business regulation", "monopoly", "merger approval"];
 const INTERNATIONAL_KEYWORDS = ["international economic", "g7", "g20", "imf", "world bank", "trade pact", "economic summit", "bilateral", "multilateral", "wto"];
 
-function categorizeArticle(title: string, description: string): PolicyNewsArticle["category"] {
+function categorizeArticle(title: string, description: string): string {
   const text = `${title} ${description}`.toLowerCase();
   if (FEDERAL_RESERVE_KEYWORDS.some(kw => text.includes(kw))) return "federal_reserve";
   if (TRADE_POLICY_KEYWORDS.some(kw => text.includes(kw))) return "trade_policy";
@@ -65,7 +65,6 @@ function categorizeArticle(title: string, description: string): PolicyNewsArticl
   return "general";
 }
 
-// Source to political bias mapping (same as main feed)
 const sourceBiasMap: Record<string, "left" | "center" | "right"> = {
   "cnn": "left", "msnbc": "left", "nytimes": "left", "washingtonpost": "left",
   "huffpost": "left", "vox": "left", "slate": "left",
@@ -84,17 +83,13 @@ function detectBias(source: string): "left" | "center" | "right" {
   return "center";
 }
 
-// Search terms for economic policy news
 const POLICY_SEARCH_TERMS = "federal reserve,tariffs,trade policy,tax bill,fiscal policy,labor law,regulation,antitrust,housing policy,interest rates,monetary policy,government spending";
 
 async function fetchMarketauxPolicyNews(apiKey: string): Promise<PolicyNewsArticle[]> {
   try {
     const url = `https://api.marketaux.com/v1/news/all?api_token=${apiKey}&language=en&filter_entities=true&limit=50&search=${encodeURIComponent(POLICY_SEARCH_TERMS)}`;
     const response = await fetch(url);
-    if (!response.ok) {
-      console.error("Marketaux policy news error:", response.status);
-      return [];
-    }
+    if (!response.ok) { console.error("Marketaux policy news error:", response.status); return []; }
     const data = await response.json();
     if (!data.data) return [];
     return data.data.map((article: any) => ({
@@ -108,29 +103,20 @@ async function fetchMarketauxPolicyNews(apiKey: string): Promise<PolicyNewsArtic
       category: categorizeArticle(article.title || "", article.description || ""),
       politicalBias: detectBias(article.source || ""),
     }));
-  } catch (error) {
-    console.error("Marketaux policy fetch error:", error);
-    return [];
-  }
+  } catch (error) { console.error("Marketaux policy fetch error:", error); return []; }
 }
 
 async function fetchFinnhubPolicyNews(apiKey: string): Promise<PolicyNewsArticle[]> {
   try {
     const url = `https://finnhub.io/api/v1/news?category=general&token=${apiKey}`;
     const response = await fetch(url);
-    if (!response.ok) {
-      console.error("Finnhub policy news error:", response.status);
-      return [];
-    }
+    if (!response.ok) { console.error("Finnhub policy news error:", response.status); return []; }
     const data = await response.json();
     if (!Array.isArray(data)) return [];
-
-    // Filter for policy-relevant articles
     const policyKeywords = [
       ...FEDERAL_RESERVE_KEYWORDS, ...TRADE_POLICY_KEYWORDS, ...FISCAL_POLICY_KEYWORDS,
       ...LABOR_MARKET_KEYWORDS, ...HOUSING_KEYWORDS, ...REGULATION_KEYWORDS, ...INTERNATIONAL_KEYWORDS,
     ];
-
     return data
       .filter((article: any) => {
         const text = `${article.headline} ${article.summary}`.toLowerCase();
@@ -148,25 +134,36 @@ async function fetchFinnhubPolicyNews(apiKey: string): Promise<PolicyNewsArticle
         category: categorizeArticle(article.headline || "", article.summary || ""),
         politicalBias: detectBias(article.source || ""),
       }));
-  } catch (error) {
-    console.error("Finnhub policy fetch error:", error);
-    return [];
-  }
+  } catch (error) { console.error("Finnhub policy fetch error:", error); return []; }
+}
+
+async function persistArticles(articles: PolicyNewsArticle[]) {
+  try {
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const rows = articles.map(a => ({
+      id: a.id,
+      title: a.title,
+      source: a.source,
+      image_url: a.imageUrl,
+      url: a.url,
+      published_at: a.publishedAt,
+      category: a.category,
+      article_type: 'policy',
+      ai_summary: a.summary,
+      political_bias: a.politicalBias,
+    }));
+    const { error } = await supabase.from('news_articles').upsert(rows, { onConflict: 'id', ignoreDuplicates: false });
+    if (error) console.error("Error persisting policy articles:", error);
+  } catch (e) { console.error("Persist policy articles error:", e); }
 }
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
-
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   if (!checkRateLimit(clientIp)) {
-    return new Response(
-      JSON.stringify({ error: "Too many requests, please try again later." }),
-      { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: "Too many requests" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 
   try {
@@ -174,10 +171,7 @@ serve(async (req) => {
     const finnhubKey = Deno.env.get("FINNHUB_API_KEY");
 
     if (!marketauxKey && !finnhubKey) {
-      return new Response(
-        JSON.stringify({ error: "API keys not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "API keys not configured" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const [marketauxNews, finnhubNews] = await Promise.all([
@@ -187,23 +181,45 @@ serve(async (req) => {
 
     const allNews = [...marketauxNews, ...finnhubNews];
     const seenTitles = new Set<string>();
-    const uniqueNews = allNews.filter(article => {
+    const freshArticles = allNews.filter(article => {
       const normalized = article.title.toLowerCase().substring(0, 50);
       if (seenTitles.has(normalized)) return false;
       seenTitles.add(normalized);
       return true;
     });
 
-    uniqueNews.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+    if (freshArticles.length > 0) await persistArticles(freshArticles);
 
-    return new Response(JSON.stringify({ articles: uniqueNews.slice(0, 50) }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    // Return from DB
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const { data: dbArticles, error: dbError } = await supabase
+      .from('news_articles')
+      .select('*')
+      .eq('article_type', 'policy')
+      .order('published_at', { ascending: false })
+      .limit(100);
+
+    if (dbError) {
+      console.error("DB read error:", dbError);
+      freshArticles.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+      return new Response(JSON.stringify({ articles: freshArticles.slice(0, 50) }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    const articles: PolicyNewsArticle[] = (dbArticles || []).map((r: any) => ({
+      id: r.id,
+      title: r.title,
+      source: r.source,
+      url: r.url,
+      imageUrl: r.image_url || "",
+      publishedAt: r.published_at,
+      summary: r.ai_summary || "",
+      category: r.category || "general",
+      politicalBias: r.political_bias || "center",
+    }));
+
+    return new Response(JSON.stringify({ articles }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error fetching policy news:", error);
-    return new Response(
-      JSON.stringify({ error: "Failed to fetch policy news" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: "Failed to fetch policy news" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });

@@ -12,7 +12,7 @@ import { NewsletterCTA } from "@/components/article/NewsletterCTA";
 import { ReadNextPrompt } from "@/components/article/ReadNextPrompt";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useCryptoNews, type CryptoNewsArticle } from "@/hooks/useCryptoNews";
+import { useCryptoNews, useCryptoArticleById, type CryptoNewsArticle } from "@/hooks/useCryptoNews";
 import { useArticleAnalysis } from "@/hooks/useArticleAnalysis";
 import { formatDistanceToNow } from "date-fns";
 
@@ -34,19 +34,22 @@ const categoryLabels: Record<string, string> = {
 
 export default function CryptoArticle() {
   const { id } = useParams<{ id: string }>();
-  const { data: articles = [], isLoading } = useCryptoNews();
+  const { data: articles = [], isLoading: feedLoading } = useCryptoNews();
+  const { data: dbArticle, isLoading: dbLoading } = useCryptoArticleById(id);
   const { analyzeArticle, analyzing } = useArticleAnalysis();
   const [localArticle, setLocalArticle] = useState<EnrichedCryptoArticle | null>(null);
   const [showReadNext, setShowReadNext] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
 
-  const article = articles.find((a) => a.id === id);
+  const feedArticle = articles.find((a) => a.id === id);
+  const resolvedArticle = feedArticle || dbArticle;
+  const isLoading = feedLoading && dbLoading;
 
   useEffect(() => {
-    if (article && !localArticle) {
-      setLocalArticle({ ...article, biasPercentages: { left: 33, center: 34, right: 33 } });
+    if (resolvedArticle && !localArticle) {
+      setLocalArticle({ ...resolvedArticle, biasPercentages: { left: 33, center: 34, right: 33 } });
     }
-  }, [article]);
+  }, [resolvedArticle]);
 
   useEffect(() => {
     const handleScroll = () => {
