@@ -16,7 +16,7 @@ import { MultiPerspectiveSummary } from "@/components/MultiPerspectiveSummary";
 import { Button } from "@/components/ui/button";
 import { CryptoShareModal } from "@/components/crypto/CryptoShareModal";
 import { CommentSection } from "@/components/community/CommentSection";
-import { useNews } from "@/hooks/useNews";
+import { useNews, useArticleById } from "@/hooks/useNews";
 import { useSavedArticles } from "@/hooks/useSavedArticles";
 import { useArticleAnalysis } from "@/hooks/useArticleAnalysis";
 import { useToast } from "@/hooks/use-toast";
@@ -24,7 +24,8 @@ import type { NewsArticle } from "@/types/article";
 
 const Article = () => {
   const { id } = useParams<{ id: string }>();
-  const { data: articles = [], isLoading } = useNews();
+  const { data: articles = [], isLoading: feedLoading } = useNews();
+  const { data: dbArticle, isLoading: dbLoading } = useArticleById(id);
   const { saveArticle, isArticleSaved } = useSavedArticles();
   const { analyzeArticle, analyzing } = useArticleAnalysis();
   const { toast } = useToast();
@@ -32,13 +33,15 @@ const Article = () => {
   const [localArticle, setLocalArticle] = useState<NewsArticle | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
 
-  const article = articles.find((a) => a.id === id);
+  const feedArticle = articles.find((a) => a.id === id);
+  const resolvedArticle = feedArticle || dbArticle;
+  const isLoading = feedLoading && dbLoading;
 
   useEffect(() => {
-    if (article) {
-      setLocalArticle(article);
+    if (resolvedArticle) {
+      setLocalArticle(resolvedArticle);
     }
-  }, [article]);
+  }, [resolvedArticle]);
 
   // Track scroll position for Read Next prompt
   useEffect(() => {

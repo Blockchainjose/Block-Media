@@ -159,6 +159,155 @@ export type Database = {
         }
         Relationships: []
       }
+      crossfire_stories: {
+        Row: {
+          breakdown: string | null
+          created_at: string
+          factual_summary: string | null
+          id: string
+          lean_center: number | null
+          lean_left: number | null
+          lean_right: number | null
+          neutral_headline: string
+        }
+        Insert: {
+          breakdown?: string | null
+          created_at?: string
+          factual_summary?: string | null
+          id: string
+          lean_center?: number | null
+          lean_left?: number | null
+          lean_right?: number | null
+          neutral_headline: string
+        }
+        Update: {
+          breakdown?: string | null
+          created_at?: string
+          factual_summary?: string | null
+          id?: string
+          lean_center?: number | null
+          lean_left?: number | null
+          lean_right?: number | null
+          neutral_headline?: string
+        }
+        Relationships: []
+      }
+      crossfire_story_sources: {
+        Row: {
+          article_id: string
+          excerpt: string | null
+          headline: string
+          id: string
+          image_url: string | null
+          political_bias: string
+          published_at: string
+          source: string
+          story_id: string
+          url: string
+        }
+        Insert: {
+          article_id: string
+          excerpt?: string | null
+          headline: string
+          id?: string
+          image_url?: string | null
+          political_bias: string
+          published_at?: string
+          source: string
+          story_id: string
+          url: string
+        }
+        Update: {
+          article_id?: string
+          excerpt?: string | null
+          headline?: string
+          id?: string
+          image_url?: string | null
+          political_bias?: string
+          published_at?: string
+          source?: string
+          story_id?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crossfire_story_sources_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "crossfire_stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      news_articles: {
+        Row: {
+          ai_summary: string | null
+          article_type: string
+          balanced_summary: string | null
+          bias_center: number | null
+          bias_left: number | null
+          bias_right: number | null
+          category: string
+          center_perspective: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          left_perspective: string | null
+          political_bias: string | null
+          published_at: string
+          related_symbols: string[] | null
+          right_perspective: string | null
+          source: string
+          title: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          ai_summary?: string | null
+          article_type?: string
+          balanced_summary?: string | null
+          bias_center?: number | null
+          bias_left?: number | null
+          bias_right?: number | null
+          category?: string
+          center_perspective?: string | null
+          created_at?: string
+          id: string
+          image_url?: string | null
+          left_perspective?: string | null
+          political_bias?: string | null
+          published_at?: string
+          related_symbols?: string[] | null
+          right_perspective?: string | null
+          source: string
+          title: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          ai_summary?: string | null
+          article_type?: string
+          balanced_summary?: string | null
+          bias_center?: number | null
+          bias_left?: number | null
+          bias_right?: number | null
+          category?: string
+          center_perspective?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          left_perspective?: string | null
+          political_bias?: string | null
+          published_at?: string
+          related_symbols?: string[] | null
+          right_perspective?: string | null
+          source?: string
+          title?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       newsletter_subscriptions: {
         Row: {
           created_at: string

@@ -8,14 +8,17 @@ import { Button } from "@/components/ui/button";
 import { CrossFireBadge } from "@/components/crossfire/CrossFireBadge";
 import { CrossFireLeanMeter } from "@/components/crossfire/CrossFireLeanMeter";
 import { CrossFireBreakdown } from "@/components/crossfire/CrossFireBreakdown";
-import { useCrossfireStories } from "@/hooks/useCrossfireStories";
+import { useCrossfireStories, useCrossfireStoryById } from "@/hooks/useCrossfireStories";
 
 export default function CrossFireArticle() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { data: stories = [], isLoading } = useCrossfireStories();
+  const { data: stories = [], isLoading: feedLoading } = useCrossfireStories();
+  const { data: dbStory, isLoading: dbLoading } = useCrossfireStoryById(id);
 
-  const story = stories.find((s) => s.id === id);
+  const feedStory = stories.find((s) => s.id === id);
+  const story = feedStory || dbStory;
+  const isLoading = feedLoading && dbLoading;
 
   if (isLoading) {
     return (

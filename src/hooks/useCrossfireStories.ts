@@ -38,3 +38,49 @@ export function useCrossfireStories() {
     refetchInterval: 15 * 60 * 1000,
   });
 }
+
+export function useCrossfireStoryById(id: string | undefined) {
+  return useQuery({
+    queryKey: ["crossfire-story", id],
+    queryFn: async (): Promise<CrossFireStory | null> => {
+      // Fetch story
+      const { data: storyData, error: storyError } = await supabase
+        .from("crossfire_stories" as any)
+        .select("*")
+        .eq("id", id!)
+        .maybeSingle();
+
+      if (storyError || !storyData) return null;
+      const s = storyData as any;
+
+      // Fetch sources
+      const { data: sourcesData, error: srcError } = await supabase
+        .from("crossfire_story_sources" as any)
+        .select("*")
+        .eq("story_id", id!);
+
+      const sources = (srcError || !sourcesData) ? [] : (sourcesData as any[]).map(r => ({
+        articleId: r.article_id,
+        source: r.source,
+        headline: r.headline,
+        excerpt: r.excerpt,
+        url: r.url,
+        imageUrl: r.image_url,
+        politicalBias: r.political_bias,
+        publishedAt: r.published_at,
+      }));
+
+      return {
+        id: s.id,
+        neutralHeadline: s.neutral_headline,
+        factualSummary: s.factual_summary,
+        sources,
+        breakdown: s.breakdown,
+        leanSpread: { left: s.lean_left, center: s.lean_center, right: s.lean_right },
+        createdAt: s.created_at,
+      };
+    },
+    enabled: !!id,
+    staleTime: Infinity,
+  });
+}
