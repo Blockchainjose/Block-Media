@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 
 interface SEOHeadProps {
   title: string;
@@ -26,68 +26,45 @@ export function SEOHead({
   const canonicalUrl = `${baseUrl}${canonicalPath}`;
   const imageUrl = image.startsWith("http") ? image : `${baseUrl}${image}`;
 
-  useEffect(() => {
-    // Update document title
-    document.title = fullTitle;
+  return (
+    <Helmet>
+      <title>{fullTitle}</title>
 
-    // Update meta tags
-    const updateMeta = (name: string, content: string, isProperty = false) => {
-      const attr = isProperty ? "property" : "name";
-      let meta = document.querySelector(`meta[${attr}="${name}"]`);
-      if (meta) {
-        meta.setAttribute("content", content);
-      } else {
-        meta = document.createElement("meta");
-        meta.setAttribute(attr, name);
-        meta.setAttribute("content", content);
-        document.head.appendChild(meta);
-      }
-    };
+      {/* Primary meta */}
+      <meta name="description" content={description} />
+      {keywords && <meta name="keywords" content={keywords} />}
+      <meta name="author" content={author} />
 
-    // Primary meta tags
-    updateMeta("description", description);
-    if (keywords) {
-      updateMeta("keywords", keywords);
-    }
-    updateMeta("author", author);
+      {/* Open Graph */}
+      <meta property="og:site_name" content="Block Media" />
+      <meta property="og:title" content={fullTitle} />
+      <meta property="og:description" content={description} />
+      <meta property="og:url" content={canonicalUrl} />
+      <meta property="og:type" content={type === "article" ? "article" : "website"} />
+      <meta property="og:image" content={imageUrl} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:locale" content="en_US" />
 
-    // Open Graph - Site name is always Block Media
-    updateMeta("og:site_name", "Block Media", true);
-    updateMeta("og:title", fullTitle, true);
-    updateMeta("og:description", description, true);
-    updateMeta("og:url", canonicalUrl, true);
-    updateMeta("og:type", type === "article" ? "article" : "website", true);
-    updateMeta("og:image", imageUrl, true);
-    updateMeta("og:image:width", "1200", true);
-    updateMeta("og:image:height", "630", true);
-    updateMeta("og:locale", "en_US", true);
+      {/* Article-specific OG */}
+      {type === "article" && publishedAt && (
+        <>
+          <meta property="article:published_time" content={publishedAt} />
+          <meta property="article:author" content={author} />
+          <meta property="article:publisher" content="Block Media" />
+        </>
+      )}
 
-    // Article-specific Open Graph
-    if (type === "article" && publishedAt) {
-      updateMeta("article:published_time", publishedAt, true);
-      updateMeta("article:author", author, true);
-      updateMeta("article:publisher", "Block Media", true);
-    }
+      {/* Twitter Card */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:site" content="@BlockMedia" />
+      <meta name="twitter:creator" content="@BlockMedia" />
+      <meta name="twitter:title" content={fullTitle} />
+      <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content={imageUrl} />
 
-    // Twitter Card - Always shows Block Media as source
-    updateMeta("twitter:card", "summary_large_image");
-    updateMeta("twitter:site", "@BlockMedia");
-    updateMeta("twitter:creator", "@BlockMedia");
-    updateMeta("twitter:title", fullTitle);
-    updateMeta("twitter:description", description);
-    updateMeta("twitter:image", imageUrl);
-
-    // Update canonical link
-    let canonical = document.querySelector('link[rel="canonical"]');
-    if (canonical) {
-      canonical.setAttribute("href", canonicalUrl);
-    } else {
-      canonical = document.createElement("link");
-      canonical.setAttribute("rel", "canonical");
-      canonical.setAttribute("href", canonicalUrl);
-      document.head.appendChild(canonical);
-    }
-  }, [fullTitle, description, keywords, canonicalUrl, type, imageUrl, publishedAt, author]);
-
-  return null;
+      {/* Canonical */}
+      <link rel="canonical" href={canonicalUrl} />
+    </Helmet>
+  );
 }

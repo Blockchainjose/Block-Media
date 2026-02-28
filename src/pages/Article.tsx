@@ -125,6 +125,9 @@ const Article = () => {
         description={localArticle.aiSummary.slice(0, 160)}
         canonicalPath={articleUrl}
         type="article"
+        image={localArticle.imageUrl}
+        publishedAt={localArticle.publishedAt}
+        author={localArticle.source}
       />
       <ArticleSchema article={localArticle} url={articleUrl} />
 
