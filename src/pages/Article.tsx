@@ -265,6 +265,9 @@ const Article = () => {
               {/* Newsletter CTA */}
               <NewsletterCTA />
 
+              {/* Sponsor Footer */}
+              <SponsorBanner slotKey="sponsor-article-footer" className="mt-8" />
+
               {/* Related Articles */}
               {relatedArticles.length > 0 && (
                 <RelatedArticles articles={relatedArticles} />
