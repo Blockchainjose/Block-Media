@@ -102,6 +102,7 @@ export default function Community() {
 
             {/* Sidebar */}
             <aside className="space-y-4">
+              <AdSlot slotKey="sidebar" page="community" fallbackOrientation="vertical" />
               <SentimentBar bullishPercent={bullishPercent} bearishPercent={bearishPercent} />
 
               <div className="p-4 rounded-xl bg-card border border-border">
