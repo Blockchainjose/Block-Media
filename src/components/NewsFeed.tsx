@@ -23,6 +23,7 @@ interface NewsFeedProps {
 }
 
 const ARTICLES_PER_PAGE = 6;
+const IN_FEED_AD_INTERVAL = 8;
 
 export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
