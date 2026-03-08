@@ -268,7 +268,7 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
             }
           >
             {visibleArticles.slice(1).map((article, index) => (
-              <>
+              <Fragment key={article.id}>
                 <motion.div
                   key={article.id}
                   initial={{ opacity: 0, y: 20 }}
