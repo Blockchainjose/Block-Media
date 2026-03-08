@@ -22,6 +22,7 @@ import CrossFire from "./pages/CrossFire";
 import CrossFireArticle from "./pages/CrossFireArticle";
 import Policy from "./pages/Policy";
 import SitemapRedirect from "./pages/SitemapRedirect";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
