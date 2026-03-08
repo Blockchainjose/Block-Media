@@ -268,22 +268,35 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
             }
           >
             {visibleArticles.slice(1).map((article, index) => (
-              <motion.div
-                key={article.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <Link to={`/article/${article.id}`} className="block h-full">
-                  <NewsCard 
-                    article={article} 
-                    isSaved={isArticleSaved(article.url)}
-                    onSave={() => handleSave(article)}
-                    onShare={() => handleShare(article)}
-                  />
-                </Link>
-              </motion.div>
+              <>
+                <motion.div
+                  key={article.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <Link to={`/article/${article.id}`} className="block h-full">
+                    <NewsCard 
+                      article={article} 
+                      isSaved={isArticleSaved(article.url)}
+                      onSave={() => handleSave(article)}
+                      onShare={() => handleShare(article)}
+                    />
+                  </Link>
+                </motion.div>
+                {/* In-feed ad every N articles */}
+                {(index + 1) % IN_FEED_AD_INTERVAL === 0 && (
+                  <motion.div
+                    key={`ad-${index}`}
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                  >
+                    <AdSlot slotKey="in-feed" page="home" />
+                  </motion.div>
+                )}
+              </>
             ))}
           </div>
         )}
