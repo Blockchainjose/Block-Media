@@ -29,6 +29,16 @@ const Index = () => {
       
       <Header />
       <PriceTicker />
+
+      {/* Leaderboard Ad - below nav */}
+      <div className="container mx-auto px-4 mt-2">
+        <AdSlot slotKey="leaderboard" page="home" className="flex justify-center" />
+      </div>
+      
+      {/* Sponsor header banner */}
+      <div className="container mx-auto px-4 mt-2">
+        <SponsorBanner slotKey="sponsor-header" />
+      </div>
       
       <main>
         <HeroSection onGetStarted={() => setShowAuthModal(true)} />
