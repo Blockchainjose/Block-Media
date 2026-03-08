@@ -11,6 +11,8 @@ import { PostCard } from "@/components/community/PostCard";
 import { SentimentBar } from "@/components/community/SentimentBar";
 import { useCommunityPosts } from "@/hooks/useCommunityPosts";
 import { ROOM_TABS } from "@/lib/market-utils";
+import { AdSlot } from "@/components/ads/AdSlot";
+import { SponsorWidget } from "@/components/ads/SponsorWidget";
 
 export default function Community() {
   const {
@@ -100,6 +102,7 @@ export default function Community() {
 
             {/* Sidebar */}
             <aside className="space-y-4">
+              <AdSlot slotKey="sidebar" page="community" fallbackOrientation="vertical" />
               <SentimentBar bullishPercent={bullishPercent} bearishPercent={bearishPercent} />
 
               <div className="p-4 rounded-xl bg-card border border-border">
@@ -120,6 +123,8 @@ export default function Community() {
                   )}
                 </div>
               </div>
+
+              <SponsorWidget />
 
               <div className="p-4 rounded-xl bg-card border border-border">
                 <h3 className="text-sm font-medium mb-2">Community Guidelines</h3>

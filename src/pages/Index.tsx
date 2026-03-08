@@ -8,6 +8,10 @@ import { Footer } from "@/components/Footer";
 import { AuthModal } from "@/components/AuthModal";
 import { SEOHead } from "@/components/SEOHead";
 import { CookieBanner } from "@/components/CookieBanner";
+import { AdSlot } from "@/components/ads/AdSlot";
+import { StickyFooterAd } from "@/components/ads/StickyFooterAd";
+import { SponsorBanner } from "@/components/ads/SponsorBanner";
+import { InterstitialAd } from "@/components/ads/InterstitialAd";
 import type { Interest } from "@/components/InterestSelector";
 
 const Index = () => {
@@ -25,6 +29,16 @@ const Index = () => {
       
       <Header />
       <PriceTicker />
+
+      {/* Leaderboard Ad - below nav */}
+      <div className="container mx-auto px-4 mt-2">
+        <AdSlot slotKey="leaderboard" page="home" className="flex justify-center" />
+      </div>
+      
+      {/* Sponsor header banner */}
+      <div className="container mx-auto px-4 mt-2">
+        <SponsorBanner slotKey="sponsor-header" />
+      </div>
       
       <main>
         <HeroSection onGetStarted={() => setShowAuthModal(true)} />
@@ -52,6 +66,8 @@ const Index = () => {
       />
       
       <CookieBanner />
+      <StickyFooterAd />
+      <InterstitialAd />
     </div>
   );
 };

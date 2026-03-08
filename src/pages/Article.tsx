@@ -20,6 +20,9 @@ import { useNews, useArticleById } from "@/hooks/useNews";
 import { useSavedArticles } from "@/hooks/useSavedArticles";
 import { useArticleAnalysis } from "@/hooks/useArticleAnalysis";
 import { useToast } from "@/hooks/use-toast";
+import { AdSlot } from "@/components/ads/AdSlot";
+import { SponsorBanner } from "@/components/ads/SponsorBanner";
+import { SponsorWidget } from "@/components/ads/SponsorWidget";
 import type { NewsArticle } from "@/types/article";
 
 const Article = () => {
@@ -209,6 +212,9 @@ const Article = () => {
                 <BiasPercentageBar percentages={localArticle.biasPercentages} size="lg" />
               </section>
 
+              {/* In-Article Ad — after bias analysis (position ~3rd section) */}
+              <AdSlot slotKey="in-article" page="article" className="my-6" />
+
               {/* Multi-Perspective Summary */}
               {hasAnalysis ? (
                 <section className="mb-8">
@@ -259,6 +265,9 @@ const Article = () => {
               {/* Newsletter CTA */}
               <NewsletterCTA />
 
+              {/* Sponsor Footer */}
+              <SponsorBanner slotKey="sponsor-article-footer" className="mt-8" />
+
               {/* Related Articles */}
               {relatedArticles.length > 0 && (
                 <RelatedArticles articles={relatedArticles} />
@@ -267,8 +276,10 @@ const Article = () => {
           </article>
 
           {/* Sidebar */}
-          <aside className="lg:col-span-1">
+          <aside className="lg:col-span-1 space-y-6">
+            <AdSlot slotKey="sidebar" page="article" fallbackOrientation="vertical" />
             <TrendingSidebar articles={articles} currentArticleId={localArticle.id} />
+            <SponsorWidget />
           </aside>
         </div>
       </main>

@@ -22,6 +22,7 @@ import CrossFire from "./pages/CrossFire";
 import CrossFireArticle from "./pages/CrossFireArticle";
 import Policy from "./pages/Policy";
 import SitemapRedirect from "./pages/SitemapRedirect";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
           <Route path="/cookie-policy" element={<CookiePolicy />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/sitemap.xml" element={<SitemapRedirect />} />
+          <Route path="/admin" element={<Admin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
