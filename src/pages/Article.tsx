@@ -212,6 +212,9 @@ const Article = () => {
                 <BiasPercentageBar percentages={localArticle.biasPercentages} size="lg" />
               </section>
 
+              {/* In-Article Ad — after bias analysis (position ~3rd section) */}
+              <AdSlot slotKey="in-article" page="article" className="my-6" />
+
               {/* Multi-Perspective Summary */}
               {hasAnalysis ? (
                 <section className="mb-8">
