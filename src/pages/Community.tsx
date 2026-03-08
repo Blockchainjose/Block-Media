@@ -11,6 +11,8 @@ import { PostCard } from "@/components/community/PostCard";
 import { SentimentBar } from "@/components/community/SentimentBar";
 import { useCommunityPosts } from "@/hooks/useCommunityPosts";
 import { ROOM_TABS } from "@/lib/market-utils";
+import { AdSlot } from "@/components/ads/AdSlot";
+import { SponsorWidget } from "@/components/ads/SponsorWidget";
 
 export default function Community() {
   const {
