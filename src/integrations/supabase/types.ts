@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          page_url: string | null
+          slot_key: string
+        }
+        Insert: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          page_url?: string | null
+          slot_key: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          page_url?: string | null
+          slot_key?: string
+        }
+        Relationships: []
+      }
+      ad_slots: {
+        Row: {
+          ad_code: string | null
+          created_at: string
+          display_rules: Json
+          fallback_image_url: string | null
+          fallback_link: string | null
+          fallback_type: string | null
+          id: string
+          is_active: boolean
+          name: string
+          size_desktop: string | null
+          size_mobile: string | null
+          slot_key: string
+          slot_type: string
+          updated_at: string
+        }
+        Insert: {
+          ad_code?: string | null
+          created_at?: string
+          display_rules?: Json
+          fallback_image_url?: string | null
+          fallback_link?: string | null
+          fallback_type?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          size_desktop?: string | null
+          size_mobile?: string | null
+          slot_key: string
+          slot_type?: string
+          updated_at?: string
+        }
+        Update: {
+          ad_code?: string | null
+          created_at?: string
+          display_rules?: Json
+          fallback_image_url?: string | null
+          fallback_link?: string | null
+          fallback_type?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          size_desktop?: string | null
+          size_mobile?: string | null
+          slot_key?: string
+          slot_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       article_comments: {
         Row: {
           article_id: string
@@ -468,6 +543,51 @@ export type Database = {
           id?: string
           political_bias?: Database["public"]["Enums"]["political_bias"] | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      sponsor_banners: {
+        Row: {
+          created_at: string
+          display_end: string | null
+          display_order: number
+          display_start: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          label: string | null
+          link_url: string
+          slot_key: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_end?: string | null
+          display_order?: number
+          display_start?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          label?: string | null
+          link_url: string
+          slot_key: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_end?: string | null
+          display_order?: number
+          display_start?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          label?: string | null
+          link_url?: string
+          slot_key?: string
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
