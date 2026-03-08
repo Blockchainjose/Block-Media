@@ -296,7 +296,7 @@ export function NewsFeed({ selectedInterests, onInterestChange }: NewsFeedProps)
                     <AdSlot slotKey="in-feed" page="home" />
                   </motion.div>
                 )}
-              </>
+              </Fragment>
             ))}
           </div>
         )}
