@@ -20,6 +20,9 @@ import { useNews, useArticleById } from "@/hooks/useNews";
 import { useSavedArticles } from "@/hooks/useSavedArticles";
 import { useArticleAnalysis } from "@/hooks/useArticleAnalysis";
 import { useToast } from "@/hooks/use-toast";
+import { AdSlot } from "@/components/ads/AdSlot";
+import { SponsorBanner } from "@/components/ads/SponsorBanner";
+import { SponsorWidget } from "@/components/ads/SponsorWidget";
 import type { NewsArticle } from "@/types/article";
 
 const Article = () => {
