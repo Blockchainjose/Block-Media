@@ -8,6 +8,10 @@ import { Footer } from "@/components/Footer";
 import { AuthModal } from "@/components/AuthModal";
 import { SEOHead } from "@/components/SEOHead";
 import { CookieBanner } from "@/components/CookieBanner";
+import { AdSlot } from "@/components/ads/AdSlot";
+import { StickyFooterAd } from "@/components/ads/StickyFooterAd";
+import { SponsorBanner } from "@/components/ads/SponsorBanner";
+import { InterstitialAd } from "@/components/ads/InterstitialAd";
 import type { Interest } from "@/components/InterestSelector";
 
 const Index = () => {
