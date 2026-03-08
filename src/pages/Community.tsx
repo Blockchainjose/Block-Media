@@ -124,6 +124,8 @@ export default function Community() {
                 </div>
               </div>
 
+              <SponsorWidget />
+
               <div className="p-4 rounded-xl bg-card border border-border">
                 <h3 className="text-sm font-medium mb-2">Community Guidelines</h3>
                 <ul className="text-xs text-muted-foreground space-y-1">

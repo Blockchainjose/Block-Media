@@ -276,8 +276,10 @@ const Article = () => {
           </article>
 
           {/* Sidebar */}
-          <aside className="lg:col-span-1">
+          <aside className="lg:col-span-1 space-y-6">
+            <AdSlot slotKey="sidebar" page="article" fallbackOrientation="vertical" />
             <TrendingSidebar articles={articles} currentArticleId={localArticle.id} />
+            <SponsorWidget />
           </aside>
         </div>
       </main>

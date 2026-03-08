@@ -66,6 +66,8 @@ const Index = () => {
       />
       
       <CookieBanner />
+      <StickyFooterAd />
+      <InterstitialAd />
     </div>
   );
 };
