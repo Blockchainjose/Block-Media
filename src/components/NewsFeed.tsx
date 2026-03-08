@@ -14,6 +14,7 @@ import { useCrossfireStories } from "@/hooks/useCrossfireStories";
 import { useSavedArticles } from "@/hooks/useSavedArticles";
 import { Alert, AlertDescription } from "./ui/alert";
 import { useToast } from "@/hooks/use-toast";
+import { AdSlot } from "@/components/ads/AdSlot";
 import type { NewsArticle } from "@/types/article";
 
 interface NewsFeedProps {
